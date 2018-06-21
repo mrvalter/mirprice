@@ -1,0 +1,162 @@
+<div class="col-12">
+          <!-- LINE CHART -->
+          <div class="box box-info">
+            <div class="box-header with-border">
+              <h3 class="box-title"></h3>            
+            </div>
+            <div class="box-body">
+              <div class="chart">
+                <canvas id="lineChart" style="height:250px; width: 100%;  background-color: #2d353c"></canvas>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+</div>
+<div class="col-12">
+    <div class="box">
+        <div class="box-header ui-sortable-handle">
+          <i class="fa fa-comments"></i>
+
+          <h3 class="box-title"><translate data-translate="detail.chattitle"></translate></h3>
+           
+        </div>
+
+        <div class="box-body chat" id="chat-box" style="width: 100%;">
+      <!-- chat item -->
+            <div class="item">             
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 4:15</small>
+                  Smith doe
+                </a>
+                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+              </p>
+            </div>
+            <div style="clear:both;"></div>
+      <!-- /.item -->
+      <!-- chat item -->
+            <div class="item">            
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  Maical Jordan
+                </a>
+                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+              </p>
+            </div>
+       <div class="item">            
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  Maical Jordan
+                </a>
+                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+              </p>
+            </div>
+       <div class="item">            
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  Maical Jordan
+                </a>
+                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+              </p>
+            </div>
+       <div class="item">            
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  Maical Jordan
+                </a>
+                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+              </p>
+            </div>
+      
+      
+        <div style="clear:both; width: 100%;height:100px;"></div>
+    </div>
+                  
+    </div>
+    
+</div>
+<div class="box-footer">
+    <div class="input-group">
+      <input class="form-control">
+
+      <div class="input-group-btn">
+        <button type="button" class="btn btn-success"><translate data-translate="detail.writemessage"></translate></button>
+      </div>
+    </div>
+</div>
+
+<script>
+    var pData = [
+                {
+                    t: new Date("2018-2-09"),
+                    y: "1"
+                }, 
+                {
+                    t: new Date("2018-3-09"),
+                    y: "10"
+                },
+                {
+                    t: new Date("2018-12-09"),
+                    y: "13"
+                },
+                {
+                    t: new Date("2018-12-12"),
+                    y: "13"
+                }
+            ];
+					
+		console.log(pData);
+                var lch = $('#lineChart');
+		chart = new Chart(lch, {
+			type: 'line',
+			data: {
+				/*labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],*/
+				datasets: [{
+					data: pData,
+					backgroundColor: "rgba(38,198,218,0.2)",               
+					borderColor: '#26c6da',
+					pointBackgroundColor: '#26c6da',            
+					borderWidth: 1,
+					fillColor           : 'rgba(38,198,218,0)',
+
+				}]
+			},
+			options: {
+				legend: {
+					display: false,
+					labels: {
+						// This more specific font property overrides the global property
+						fontColor: 'black'
+					}
+				},
+				tooltips: {
+				  enabled: false,  
+				},
+
+				scales: {
+					yAxes: [{                
+						ticks: {
+							beginAtZero:true
+						},
+						gridLines: {
+							color: "#798699",
+						}
+					}],
+					xAxes: [{
+                                            type: 'time',
+                                            time: {
+                                                     unit: 'month'
+                                            },
+                                            gridLines: {
+                                                    color: "#798699",
+                                            }
+					}]
+				}
+			}
+		});
+</script>

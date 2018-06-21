@@ -1,0 +1,30 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "io.cordova.hellocordova"
+    },
+    "cordova-plugin-advanced-http": {
+      "PACKAGE_NAME": "io.cordova.hellocordova"
+    },
+    "cordova-plugin-file": {
+      "PACKAGE_NAME": "io.cordova.hellocordova"
+    },
+    "cordova-plugin-device": {
+      "PACKAGE_NAME": "io.cordova.mirprice"
+    },
+    "cordova-plugin-dialogs": {
+      "PACKAGE_NAME": "io.cordova.mirprice"
+    },
+    "cordova-plugin-network-information": {
+      "PACKAGE_NAME": "io.cordova.mirprice"
+    }
+  },
+  "dependent_plugins": {}
+}

@@ -1,0 +1,56 @@
+
+    <!-- begin sidebar scrollbar -->
+    <div data-scrollbar="true" data-height="100%" data-init="true" style="padding: 10pt 10pt;">
+            <div id="enter-container">
+                <button id="menu-registration-button" class="btn btn-warning"><translate data-translate="menu.registration">Registration</translate></button>
+                <button id="menu-enter-button" class="btn btn-success" style="float:right;"><translate data-translate="menu.enter">Login</translate></button>
+            </div>
+                <div style="clear:both; height: 10pt"></div>
+            <!-- begin sidebar user -->
+            <!--<ul class="nav">
+                <li class="nav-profile">
+                        <a href="javascript:;" data-toggle="nav-profile">
+                                <div class="cover with-shadow"></div>
+                                <div class="image">
+                                        <img src="../assets/img/user/user-13.jpg" alt="">
+                                </div>
+                                <div class="info">
+                                        <b class="caret pull-right"></b>
+                                        Sean Ngu
+                                        <small>Front end developer</small>
+                                </div>
+                        </a>
+                </li>
+                <li>
+                    <ul class="nav nav-profile">
+                        <li><a href="javascript:;"><i class="fa fa-cog"></i> Settings</a></li>
+                        <li class="menu-row"><a href="javascript:;" data-page="page-feedback"><i class="fa fa-star"></i><translate data-translate="menu.feedback">Send Feedback</translate></a></li>
+                        <li><a href="javascript:;"><i class="fa fa-question-circle"></i> Helps</a></li>
+                    </ul>
+                </li>
+            </ul> -->
+            
+            <ul class="nav">
+                <!--<li class="menu-row"><a data-page="message-page"><i class="fa fa-envelope"></i> Messages</a></li>-->
+                <li class="menu-row"><a href="#" data-page="page-catalog"><i class="fa fa-list"></i><translate data-translate="menu.catalog">Catalog</translate></a></li>
+                <li class="menu-row"><a href="#" data-page="page-settings"><i class="fa fa-gear"></i><translate data-translate="menu.settings">Settings</translate></a></li>                
+                <li class="menu-row"><a></a></li>
+                <li id="menu-exit-button" class="menu-row"><a><i class="fa fa-star"></i> <translate data-translate="menu.exit">Exit</translate></a></li>
+            </ul>
+           
+    </div>
+    <!-- end sidebar scrollbar -->
+
+	<script>
+		$('#menu-registration-button').click(function(){
+			app.showPage("page-registration", false);
+		});
+		
+		$('#menu-enter-button').click(function(){
+			app.showPage("page-login", false);
+		});
+                                
+                $('#menu-exit-button').click(function(){
+                    app.exitNotice();
+                });
+	</script>

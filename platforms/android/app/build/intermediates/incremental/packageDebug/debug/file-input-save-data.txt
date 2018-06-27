@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Thu Jun 28 00:30:57 MSK 2018
+#Thu Jun 28 02:21:23 MSK 2018
 76.base=/home/sworion/www/mirprice/platforms/android/app/build/intermediates/res/debug/resources-debug.ap_
 5.base=/home/sworion/www/mirprice/platforms/android/app/build/intermediates/assets/debug
 86.base=/home/sworion/www/mirprice/platforms/android/app/build/intermediates/assets/debug

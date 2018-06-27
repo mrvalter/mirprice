@@ -134,7 +134,27 @@ var app = {
 	drawCatalogDetail: function(resp_data){
 		app.initUserTemplates();
 		var points =  resp_data.points;
-		app.chart = app.buildChart(points);		
+		app.chart = app.buildChart(points);
+		app.buildMessages(resp_data.messages);
+	},
+	
+	buildMessages: function(messages){
+		var html = "";
+		for(let i=0; i<messages.length; i++){						
+			html += `
+			<div class="item">            
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  `+messages[i].mAuthor+`
+				</a>
+                `+messages[i].message+`
+              </p>
+            </div>`;			
+		}
+		
+		$("#chat-box").html(html);
+		
 	},
 	
 	initUserTemplates: function(){

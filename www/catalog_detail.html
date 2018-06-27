@@ -76,18 +76,15 @@
                 </a>
                 It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
               </p>
-            </div>
-      
-      
-        <div style="clear:both; width: 100%;height:100px;"></div>
+            </div>                    
     </div>
-                  
+      <div style="clear:both; width: 100%;height:100px;"></div>            
     </div>
     
 </div>
 <div id="detail-message-write-container" class="box-footer" style="display:none;">
     <div class="input-group">
-      <input id="detail-input-message" class="form-control" />
+        <input id="detail-input-message" class="form-control" value="<script>alert('dddd');</script>" />
 
       <div class="input-group-btn">
         <button id="detail-send-message-button" type="button" class="btn btn-success"><translate data-translate="detail.writemessage"></translate></button>
@@ -101,8 +98,7 @@
 		let message = $("#detail-input-message").val();
 		if(!message){
 			return false;
-		}
-		alert(app.detail_id);
+		}		
 		
 		let params = {
 			message: $("#detail-input-message").val(),
@@ -110,7 +106,8 @@
 		};
 		
 		app.sendRequest(params, "sendMessage", function(response){
-			app.drawCatalogDetail(responce);
+                        $('#detail-input-message').val("");
+			app.drawCatalogDetail(response);
 		});
 	});
 	

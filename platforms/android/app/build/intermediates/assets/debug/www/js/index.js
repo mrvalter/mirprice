@@ -131,6 +131,32 @@ var app = {
 		
 	},
 	
+	drawCatalogDetail: function(resp_data){
+		app.initUserTemplates();
+		var points =  resp_data.points;
+		app.chart = app.buildChart(points);
+		app.buildMessages(resp_data.messages);
+	},
+	
+	buildMessages: function(messages){
+		var html = "";
+		for(let i=0; i<messages.length; i++){						
+			html += `
+			<div class="item">            
+              <p class="message">
+                <a href="#" class="name">
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  `+messages[i].mAuthor+`
+				</a>
+                `+messages[i].message+`
+              </p>
+            </div>`;			
+		}
+		
+		$("#chat-box").html(html);
+		
+	},
+	
 	initUserTemplates: function(){
 		
 		if(!this.isAuthorize()){
@@ -401,7 +427,7 @@ var app = {
         }else{
             this._showMenu();
         }
-    },
+    },		
 	
 	showCatalogDetail: function(item_id){		
 		app._hideMenu();
@@ -418,17 +444,11 @@ var app = {
 		
 		
 		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {			
-			  app.DrawCatalogDetail(resp_data);
+			  app.drawCatalogDetail(resp_data);
 		});
 		
 		return true;		
-	},	
-	
-	drawCatalogDetail: function(resp_data){
-		app.initUserTemplates();
-		var points =  resp_data.points;
-		app.chart = app.buildChart(points);		
-	},
+	},			
 
 	rebuildTemplates: function(){
 		app.buildCatalog();

@@ -8,7 +8,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-users fa" aria-hidden="true"></i></span>
                     </div>
-                        <input type="text" class="form-control" name="login" id="login-login" value="Root">
+                        <input type="text" class="form-control" name="login" id="login-login" value="test">
                 </div>
         </div>
     </div>
@@ -41,6 +41,7 @@
         
         console.log("loginButtonClick");
         app.sendRequest(sendData, "login", function(response){
+			app.initUserTemplates();
             app.rebuild();
         },
         

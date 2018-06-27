@@ -131,6 +131,12 @@ var app = {
 		
 	},
 	
+	drawCatalogDetail: function(resp_data){
+		app.initUserTemplates();
+		var points =  resp_data.points;
+		app.chart = app.buildChart(points);		
+	},
+	
 	initUserTemplates: function(){
 		
 		if(!this.isAuthorize()){
@@ -401,7 +407,7 @@ var app = {
         }else{
             this._showMenu();
         }
-    },
+    },		
 	
 	showCatalogDetail: function(item_id){		
 		app._hideMenu();
@@ -418,17 +424,11 @@ var app = {
 		
 		
 		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {			
-			  app.DrawCatalogDetail(resp_data);
+			  app.drawCatalogDetail(resp_data);
 		});
 		
 		return true;		
-	},	
-	
-	drawCatalogDetail: function(resp_data){
-		app.initUserTemplates();
-		var points =  resp_data.points;
-		app.chart = app.buildChart(points);		
-	},
+	},			
 
 	rebuildTemplates: function(){
 		app.buildCatalog();
@@ -695,7 +695,17 @@ $(document).ready(function(){
 				});
 				
 			}
-						
+			
+			if(direction == "down"){
+				if(phase == "cancel"){
+					$("#update-div").css({top: 0});
+				}
+				else if($(this).scrollTop() <= 0 && distance < 60){
+					$("#update-div").css({top: distance});
+				}
+				
+				console.log(direction, phase);
+			}						
 		},
 				
 		swipeLeft: function (event, direction, distance, duration, fingerCount) {
@@ -745,6 +755,16 @@ $(document).ready(function(){
 
 		},
 		
+		swipeDown: function (event, direction, distance, duration, fingerCount) {			
+			
+			$("#update-div").css({top: 0});
+			
+			if($(this).scrollTop() <= 0 && distance >= 60){				
+				app.rebuild();
+			}
+		},
+		
+		//allowPageScroll:"vertical"
 		allowPageScroll:"vertical"
 	});
 	

@@ -5,64 +5,68 @@
     <a href="" class="btn btn-block btn-facebook"> <i class="fa fa-facebook-f"></i>  Login via facebook</a>
 </p>-->
 
-<form id="registration-form" class="form-horizontal" method="post" action="#">
-						
-        <div class="form-group">
-            <label for="name" class="cols-sm-2 control-label"><translate data-translate="reg.name"></translate></label>
+<form id="registration-form" class="form-horizontal" method="post" action="#">	
+        <div id="reg-gr-name" class="form-group">
+            <label for="reg-name" class="cols-sm-2 control-label"><translate data-translate="reg.name"></translate></label>
                 <div class="cols-sm-10">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fa fa-user fa" aria-hidden="true"></i></span>
                             </div>
-                                <input type="text" class="form-control" name="name" id="name">
+                                <input type="text" class="form-control" name="name" id="reg-name">
+                                <div id="reg-name-error" class="invalid-feedback"></div>
                         </div>
                 </div>
         </div>
 
         <div class="form-group">
-                <label for="email" class="cols-sm-2 control-label"><translate data-translate="reg.mail"></translate></label>
+                <label for="reg-email" class="cols-sm-2 control-label"><translate data-translate="reg.mail"></translate></label>
                 <div class="cols-sm-10">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
                             </div>
-                                <input type="text" class="form-control" name="email" id="email">
+                                <input type="text" class="form-control" name="email" id="reg-email">
+                                <div id="reg-email-error" class="invalid-feedback"></div>
                         </div>
                 </div>
         </div>
 
         <div class="form-group">
-                <label for="username" class="cols-sm-2 control-label"><translate data-translate="reg.login"></translate></label>
+                <label for="reg-login" class="cols-sm-2 control-label"><translate data-translate="reg.login"></translate></label>
                 <div class="cols-sm-10">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fa fa-users fa" aria-hidden="true"></i></span>
                             </div>
-                                <input type="text" class="form-control" name="username" id="username">
+                                <input type="text" class="form-control" name="login" id="reg-login">
+                                <div id="reg-login-error" class="invalid-feedback"></div>
                         </div>
                 </div>
         </div>
 
         <div class="form-group">
-                <label for="password" class="cols-sm-2 control-label"><translate data-translate="reg.password"></translate></label>
+                <label for="reg-password" class="cols-sm-2 control-label"><translate data-translate="reg.password"></translate></label>
                 <div class="cols-sm-10">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
                             </div>
-                                <input type="password" class="form-control" name="password" id="password">
+                                <input type="password" class="form-control" name="password" id="reg-password">
+                                <div id="reg-password-error" class="invalid-feedback"></div>
                         </div>
                 </div>
         </div>
 
         <div class="form-group">
-                <label for="confirm" class="cols-sm-2 control-label"><translate data-translate="reg.password_c"></translate></label>
+                <label for="reg-repassword" class="cols-sm-2 control-label"><translate data-translate="reg.password_c"></translate></label>
                 <div class="cols-sm-10">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fa fa-lock fa-lg" aria-hidden="true"></i></span>
                             </div>
-                                <input type="password" class="form-control" name="confirm" id="confirm">
+                                <input type="password" class="form-control" name="repassword" id="reg-repassword">
+                                <div id="reg-repassword-error" class="invalid-feedback"></div>
                         </div>
                 </div>
         </div>
@@ -76,17 +80,43 @@
 </div>
 
 <script>
-    function onConfirm(buttonIndex) {
-        alert('You selected button ' + buttonIndex);
-    }
     
+	
+	if(app.test == 1){		
+		$('#reg-name').val("Александр Тест");
+		$('#reg-email').val("mrvalter@yandex.ru");
+		$('#reg-login').val("test");
+		$('#reg-password').val("1234567890");
+		$('#reg-repassword').val($('#reg-password').val());
+	}
+	
    $('#registration-submit-button').click(function(){
-       navigator.notification.confirm(
-            'You are the winner!', // message
-             onConfirm,            // callback to invoke with index of button pressed
-            'Game Over',           // title
-            ['Restart','Exit']     // buttonLabels
-        );
+        $('#registration-form input').removeClass("is-invalid");
+        $('#registration-form .invalid-feedback').html("");
+        
+        var data = $('#registration-form').serializeArray();
+        var sendData = {};
+        for(let i=0; i < data.length; i++){
+            sendData[data[i].name] = data[i].value
+        }
+                
+        app.sendRequest(sendData, "registration", function(response){
+            app.rebuild();
+        },
+        
+        function(response){
+            let fr = response.form_errors;            
+            if(fr[0] !== undefined){
+                for(let i=0; i<fr.length; i++){
+                    let elid = "reg-"+fr[i].name;
+                    let errid = elid+"-error";
+                                        
+                    $('#'+elid).addClass("is-invalid");
+                    $('#'+errid).html(fr[i].error);
+                    
+                }
+            }
+        });
    }); 
    
    

@@ -72,7 +72,13 @@ var app = {
 			"min-height": "100%"
 		});				
 			
-			
+		$('#page-catalog').on('click', '.list-group a', function(){
+			console.log("click catalog");
+			app.showCatalogDetail($(this).data("id"));
+		});
+		
+		this.initUserTemplates();
+		
 		/* Загружаем настройки */
 		/*console.log(cordova.file.dataDirectory);
 		window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
@@ -97,9 +103,10 @@ var app = {
 	server_url: "http://mirprice.com/api/api.php",
 	//server_url: "http://77.41.7.198/api/api.php",
 	chart: {},
+	test: 1,
 	
 	options: {
-		currency: "usd",
+		currency: "rub",
 		language: "ru",
 		uid: '',
 		sessid: ''
@@ -124,6 +131,23 @@ var app = {
 		
 	},
 	
+	initUserTemplates: function(){
+		
+		if(!this.isAuthorize()){
+			$("#detail-message-write-container").css({display:"none"});
+			$("#detail-message-please-login").css({display:"block"});
+			$("#header-login").html("");
+			return true;
+		}
+		
+		$("#detail-message-write-container").css({display:"block"});
+		$("#detail-message-please-login").css({display:"none"});
+		$("#header-login").html(this.user.name);
+	},
+	
+	isAuthorize: function(){
+		return this.user.id ? true : false;
+	},
 	getServerData: function(callback){
 		this.LoadImgShow();
 		
@@ -176,13 +200,15 @@ var app = {
 	
 	sendRequest: function(params, action, callback, callbackerror){
 		
-		console.log("SEND REQUEST");
+		console.log("SEND REQUEST, callback = ");
+		console.log(callback);
+		
 		app.LoadImgShow();
 		if(action){
 			params.action = action;
 		}
 		
-		let http_params = Object.assign(app.options, params);		
+		let http_params = Object.assign(params, app.options);
 		
 		oneErrorRequest = function() {				
 				
@@ -383,7 +409,8 @@ var app = {
 	},
 	
 	_initCatalogDetail: function(item_id){
-						
+		
+		app.detail_id = item_id;
 		let params = {			
 			item_id: item_id.toString(),
 			currency: data.options.currency
@@ -391,12 +418,17 @@ var app = {
 		
 		
 		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {			
-			  var points =  resp_data;			  
-			  app.chart = app.buildChart(points);
+			  app.DrawCatalogDetail(resp_data);
 		});
 		
 		return true;		
 	},	
+	
+	drawCatalogDetail: function(resp_data){
+		app.initUserTemplates();
+		var points =  resp_data.points;
+		app.chart = app.buildChart(points);		
+	},
 
 	rebuildTemplates: function(){
 		app.buildCatalog();
@@ -417,9 +449,18 @@ var app = {
 		for(let i=0; i< data.catalog.length; i++){
 			let bgcolor = '';			
 			let item = data.catalog[i];
-			if(item.up !== undefined && item.up > 0){
-				bgcolor =  item.up == "1" ? 'text-success' : 'text-danger';
+			
+			if(item.simb === "-"){
+				bgcolor = 'text-success';
+			}else if(item.simb === "+"){
+				bgcolor = 'text-danger';
 			}
+			
+			let str_up = "";
+			if(item.difference){
+				str_up  = item.difference + ` (`+item.percent+`)`;
+			}
+			
 			strhtml += `<a data-id="`+item.id+`" href="javascript:;" class="list-group-item list-group-item-inverse d-flex justify-content-between align-items-center text-ellipsis">
 						<div class="col-6 catalog catalog-left">
 						`+item.name+`
@@ -429,19 +470,14 @@ var app = {
 							<span class="badge">`+item.price+` <i class="fa `+app.getCurrencyIcon()+`" aria-hidden="true"></i></span>						
 							</div>	
 							<div>
-							<span class="badge `+bgcolor+`"> +27,23 (+0,40%)</span>						
+							<span class="badge `+bgcolor+`">`+str_up+`</span>						
 							</div>	
 						</div>
 					</a>`;
 		}
 		strhtml += '</div>';		
 		$('#page-catalog').html(strhtml);
-		app.showPage("page-catalog", false);
-		/* каталог */
-		$('#page-catalog').on('click', '.list-group a', function(){
-			app.showCatalogDetail($(this).data("id"));
-		});
-		
+		app.showPage("page-catalog", false);						
 		//$('#img').hide();		
 	},
 	
@@ -659,7 +695,17 @@ $(document).ready(function(){
 				});
 				
 			}
-						
+			
+			if(direction == "down"){
+				if(phase == "cancel"){
+					$("#update-div").css({top: 0});
+				}
+				else if($(this).scrollTop() <= 0 && distance < 60){
+					$("#update-div").css({top: distance});
+				}
+				
+				console.log(direction, phase);
+			}						
 		},
 				
 		swipeLeft: function (event, direction, distance, duration, fingerCount) {
@@ -709,6 +755,16 @@ $(document).ready(function(){
 
 		},
 		
+		swipeDown: function (event, direction, distance, duration, fingerCount) {			
+			
+			$("#update-div").css({top: 0});
+			
+			if($(this).scrollTop() <= 0 && distance >= 60){				
+				app.rebuild();
+			}
+		},
+		
+		//allowPageScroll:"vertical"
 		allowPageScroll:"vertical"
 	});
 	

@@ -40,15 +40,10 @@ var data = {
 	
 };
 
-var options =  {
-	currency: "usd",
-	language: "ru",
-};
-
 
 
 		
-var loadInterval = {};
+var loadInterval;
 
 
 var app = {
@@ -60,45 +55,44 @@ var app = {
     onDeviceReady: function() {		
         this.receivedEvent('deviceready');
 		document.addEventListener("backbutton", this.onBackKeyDown_callback, false);
-		loadInterval = setInterval(function() {
-			$("#img").rotate({
-			  angle:0,
-			  animateTo:360,	
-			});
-
-		  }, 200);
+		
+			  		  
     },
 		
     // Update DOM on a Received Event
-    receivedEvent: function(id) {
+    receivedEvent: function(id) {				
 		
-		console.log("NETWORK",navigator.connection.type);
 		
-		this.UID = device.uuid;
-		console.log("UID",this.UID);
+		this.options.uid = device.uuid ? device.uuid : '';
+		
 		/* Инициализируем страницы и помещаем их за окно */	
 		$('.page').css({
 			left: app._getDisplayWidth(),
 			width: app._getDisplayWidth(),
 			"min-height": "100%"
+		});				
+			
+		$('#page-catalog').on('click', '.list-group a', function(){
+			console.log("click catalog");
+			app.showCatalogDetail($(this).data("id"));
 		});
-			
-			
+		
+		this.initUserTemplates();
+		
 		/* Загружаем настройки */
-		console.log(cordova.file.dataDirectory);
+		/*console.log(cordova.file.dataDirectory);
 		window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
 			console.log('file system open: ' + dirEntry.name);
 			var isAppend = false;
 			createFile(dirEntry, "options.json", isAppend);
 		}, function(e){
 			console.log("Failed file read: " + e.toString());
-		});
+		});*/
 		
 		
 		/* Получаем данные с сервера */
-		app.getServerData(options, app.buildTemplates);
-    },
-		
+		app.getServerData(app.buildTemplates);
+    },		
 		
 	localloads: {},
 	sideBar: null,
@@ -107,8 +101,180 @@ var app = {
 	sidebar_width: 300,
 	pageAnimateSpeed: 100,
 	server_url: "http://mirprice.com/api/api.php",
-	chart: {},		
+	//server_url: "http://77.41.7.198/api/api.php",
+	chart: {},
+	test: 1,
+	
+	options: {
+		currency: "rub",
+		language: "ru",
+		uid: '',
+		sessid: ''
+	},
+	
+	user: {},
 
+	setSessId: function(sessid){
+		this.options.sessid = sessid;
+	},
+	
+	setUser: function(user){
+		if(user.id === this.user.id){
+			return true;
+		}
+		
+		this.user = user;
+		
+		if(user.id){
+			$('#enter-container').css({display:"none"});
+		}
+		
+	},
+	
+	initUserTemplates: function(){
+		
+		if(!this.isAuthorize()){
+			$("#detail-message-write-container").css({display:"none"});
+			$("#detail-message-please-login").css({display:"block"});
+			$("#header-login").html("");
+			return true;
+		}
+		
+		$("#detail-message-write-container").css({display:"block"});
+		$("#detail-message-please-login").css({display:"none"});
+		$("#header-login").html(this.user.name);
+	},
+	
+	isAuthorize: function(){
+		return this.user.id ? true : false;
+	},
+	getServerData: function(callback){
+		this.LoadImgShow();
+		
+		if(!this.checkConnection()){
+			this.LoadImgHide();
+			
+			navigator.notification.confirm(
+				'Web connection error! Try again ?', // message
+				 app.onConfirmReLoadNet,		   // callback to invoke with index of button pressed
+				'no internet connection',           // title
+				['Yes','Cancel']     // buttonLabels
+			);
+			return false;
+		}
+		
+		if(typeof cordova === 'undefined'){
+			return callback();
+		}						
+		
+		this.sendRequest({}, "getfulldata", function(resp_data) {				
+			app.LoadImgHide();
+			data = resp_data;																
+			if(callback !== undefined){
+				console.log(callback);
+				callback();
+			}
+		});
+			
+		return true;				
+	},
+
+	checkConnection: function(ontrue, onfalse) {		
+				
+		return !(navigator.connection.type === Connection.NONE);
+		
+		/*var states = {};
+		
+		states[Connection.UNKNOWN]  = 'Unknown connection';
+		states[Connection.ETHERNET] = 'Ethernet connection';
+		states[Connection.WIFI]     = 'WiFi connection';
+		states[Connection.CELL_2G]  = 'Cell 2G connection';
+		states[Connection.CELL_3G]  = 'Cell 3G connection';
+		states[Connection.CELL_4G]  = 'Cell 4G connection';
+		states[Connection.CELL]     = 'Cell generic connection';
+		states[Connection.NONE]     = 'No network connection';
+		*/
+
+	
+	},
+	
+	sendRequest: function(params, action, callback, callbackerror){
+		
+		console.log("SEND REQUEST, callback = ");
+		console.log(callback);
+		
+		app.LoadImgShow();
+		if(action){
+			params.action = action;
+		}
+		
+		let http_params = Object.assign(params, app.options);
+		
+		oneErrorRequest = function() {				
+				
+			onerror = function(buttonIndex){
+				if(buttonIndex === 1){
+					app.sendRequest(params, action, callback, callbackerror);
+					return true;
+				}else{
+					navigator.app.exitApp();
+				}
+			};
+
+			app.LoadImgHide();
+			navigator.notification.confirm(
+				  'Error server connection!', // message
+				   onerror,            // callback to invoke with index of button pressed
+				  'Error',           // title
+				  ['Try again','Exit']     // buttonLabels
+			);				
+		};
+		
+		//Authorization: 'OAuth2: token'
+		cordova.plugin.http.post(this.server_url, http_params, 
+			{ }, function(response) {
+				app.LoadImgHide();
+				
+				let respdata = {};
+					
+				try {
+					respdata = JSON.parse(response.data);
+				} catch (e) {
+					oneErrorRequest();
+					return false;
+				}
+								
+				if(respdata.result){
+					if(respdata.sessid !== undefined){
+						app.setSessId(respdata.sessid);						
+					}
+					else{
+						app.setSessId(null);
+					}
+					
+					if(respdata.user !== undefined){
+						app.setUser(respdata.user);						
+					}else{
+						app.setUser({});
+					}
+					if(typeof callback === "function"){
+						callback(respdata.data);					
+					}
+				}else{
+					if(typeof callbackerror === "function"){
+						callbackerror(respdata);
+					}else{
+						alert("send request error! " + respdata.error);
+					}
+				}
+				
+				return true;
+				
+			}, oneErrorRequest);
+	},
+		
+	
+	
 	getCurrencyIcon: function(){
 		for(let i = 0; i < data.translates.currencies.length; i++){
 			if(data.translates.currencies[i].code == data.options.currency){
@@ -118,30 +284,39 @@ var app = {
 	},
 	
 	rebuild: function(){		
-		this.getServerData(options, this.rebuildTemplates);		
+		app.getServerData(app.rebuildTemplates);
+	},
+		
+	/*onConfirmReLoadNet: function(label){		
+		if(label == 1){
+			app.getServerData(app.buildTemplates);
+		}else{
+			navigator.app.exitApp();
+			return false;
+		}
+	},*/
+	
+	LoadImgShow: function(){
+		clearInterval(loadInterval);
+		$('#load_back').css({display:"block"});
+		
+		$('#img').css({display:"block"});
+		loadInterval = setInterval(function() {
+			$("#img").rotate({
+			  angle:0,
+			  animateTo:360,	
+			});
+
+		}, 200);	
+		console.log(loadInterval);
 	},
 	
-	getServerData: function(params, callback){
-				 
-		if(typeof cordova === 'undefined'){
-			return callback();
-		}
-		
-		cordova.plugin.http.get(this.server_url, params, 
-			{ Authorization: 'OAuth2: token' }, function(response) {			 
-				data = JSON.parse(response.data);
-				clearInterval(loadInterval);
-				$('#img').hide();
-			
-				if(callback !== undefined){				
-					callback();
-				}
-			
-			}, function(response) {
-				  $('#img').hide();
-				  
-				  
-			});
+	LoadImgHide: function(){
+		clearInterval(loadInterval);
+		$('#load_back').css({display:"none"});
+		$('#img').css({display:"none"});		
+				
+		console.log("clear "+loadInterval);
 	},
 		
 	loadLocal: function(id, file, callback){
@@ -234,30 +409,31 @@ var app = {
 	},
 	
 	_initCatalogDetail: function(item_id){
-						
-		let params = {
-			action: "getstatisticbyitemid",
+		
+		app.detail_id = item_id;
+		let params = {			
 			item_id: item_id.toString(),
 			currency: data.options.currency
 		};
 		
-		cordova.plugin.http.get(this.server_url, params, 
-		  { Authorization: 'OAuth2: token' }, function(response) {
-			  console.log(response);
-				var points =  JSON.parse(response.data);
-				//app.showPage('page-catalog-detail');
-				app.chart = app.buildChart(points);				
-		  }, function(response) {
-				console.error(response.error);
-			
-		  });
 		
+		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {			
+			  app.DrawCatalogDetail(resp_data);
+		});
 		
+		return true;		
 	},	
+	
+	drawCatalogDetail: function(resp_data){
+		app.initUserTemplates();
+		var points =  resp_data.points;
+		app.chart = app.buildChart(points);		
+	},
 
 	rebuildTemplates: function(){
 		app.buildCatalog();
 		app._translate("pages-content");
+		app.showPage("page-catalog", false);
 	},
 	
 	buildTemplates: function(){
@@ -267,13 +443,24 @@ var app = {
 	
 	buildCatalog: function(){		
 		let strhtml = '<div class="list-group">';
-				
+		if(data.catalog === undefined){
+			return false;
+		}
 		for(let i=0; i< data.catalog.length; i++){
 			let bgcolor = '';			
 			let item = data.catalog[i];
-			if(item.up !== undefined && item.up > 0){
-				bgcolor =  item.up == "1" ? 'text-success' : 'text-danger';
+			
+			if(item.simb === "-"){
+				bgcolor = 'text-success';
+			}else if(item.simb === "+"){
+				bgcolor = 'text-danger';
 			}
+			
+			let str_up = "";
+			if(item.difference){
+				str_up  = item.difference + ` (`+item.percent+`)`;
+			}
+			
 			strhtml += `<a data-id="`+item.id+`" href="javascript:;" class="list-group-item list-group-item-inverse d-flex justify-content-between align-items-center text-ellipsis">
 						<div class="col-6 catalog catalog-left">
 						`+item.name+`
@@ -283,19 +470,14 @@ var app = {
 							<span class="badge">`+item.price+` <i class="fa `+app.getCurrencyIcon()+`" aria-hidden="true"></i></span>						
 							</div>	
 							<div>
-							<span class="badge `+bgcolor+`"> +27,23 (+0,40%)</span>						
+							<span class="badge `+bgcolor+`">`+str_up+`</span>						
 							</div>	
 						</div>
 					</a>`;
 		}
 		strhtml += '</div>';		
 		$('#page-catalog').html(strhtml);
-		app.showPage("page-catalog", false);
-		/* каталог */
-		$('#page-catalog').on('click', '.list-group a', function(){
-			app.showCatalogDetail($(this).data("id"));
-		});
-		
+		app.showPage("page-catalog", false);						
 		//$('#img').hide();		
 	},
 	
@@ -444,18 +626,9 @@ app.initialize();
 
 $(document).ready(function(){
 	
-	/*var rotation = function (){
 		
-	$("#img").rotate({
-		  angle:0,
-		  animateTo:360,
-		  callback: rotation
-		});
-	  }
-	  
-	rotation();*/					
 	$( window ).resize(function() {
-		console.log('RESIZE');
+		
 		$.each($('.page'), function(){
 			
 			if($(this).prop("id") !== app.pageShowed){
@@ -467,6 +640,10 @@ $(document).ready(function(){
 			}else{
 				$(this).css({width: app._getDisplayWidth(),"min-height": "100%"});
 			}
+		});
+		
+		$('#load_back').css({
+			width: app._getDisplayWidth(),
 		});
 	});
 	
@@ -518,6 +695,14 @@ $(document).ready(function(){
 				});
 				
 			}
+			
+			if(direction == "down"){
+				if($(this).scrollTop() > 0){
+					return false;
+				}else{
+					console.log("top distance: "+distance);
+				}
+			}
 						
 		},
 				
@@ -568,6 +753,17 @@ $(document).ready(function(){
 
 		},
 		
+		swipeDown: function (event, direction, distance, duration, fingerCount) {
+			/* Срабатывает если скролл наверху */
+			
+			if($(this).scrollTop() > 0){
+				return true;
+			}
+			
+			alert("UP SCROLL");
+		},
+		
+		//allowPageScroll:"vertical"
 		allowPageScroll:"vertical"
 	});
 	

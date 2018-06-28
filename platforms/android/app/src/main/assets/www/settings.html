@@ -13,26 +13,15 @@
 </div>
 
 <script>
-    let languages = data.translates.languages;
-    for(let i=0; i< languages.length; i++){
-        let selected = languages[i].code == data.options.language ? 'selected="selected"' : "";
-        $('#settings-language').append('<option value="'+languages[i].code+'" '+ selected +'>'+languages[i].name+'</option>');
-    }
-    
-    let currencies = data.translates.currencies;
-    for(let i=0; i< currencies.length; i++){
-        console.log(currencies[i].code, data.options.currency);
-        let selected = currencies[i].code == data.options.currency ? 'selected="selected"' : "";
-        $('#settings-currency').append('<option value="'+currencies[i].code+'" '+ selected +'>'+currencies[i].name+'</option>');
-    }
+    app.buildSettings();
     
     $('#settings-currency').change(function(){
-        options.currency = $(this).val();
+        app.options.currency = $(this).val();        
         app.rebuild();
     });
     
-     $('#settings-language').change(function(){
-        options.language = $(this).val();        
+     $('#settings-language').change(function(){        
+        app.options.language = $(this).val();        
         app.rebuild();
     });
     

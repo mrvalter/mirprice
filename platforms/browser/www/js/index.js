@@ -1,31 +1,5 @@
 var chart = {};
-var data = {
-	catalog: [
-		{
-			id: 1,
-			name: "GreipFruit",
-			description: "description",
-			price: "200",
-			up: "0",
-			
-		},
-		{
-			id: 2,
-			name: "GreipFruit2",
-			description: "description",
-			price: "200",
-			up: "1",
-			
-		},
-		{
-			id: 3,
-			name: "GreipFruit3",
-			description: "description",
-			price: "200",
-			up: "2",
-			
-		}
-	],		
+var data = {	
 	
 	user: {
 		'name': "alexander",
@@ -75,10 +49,14 @@ var app = {
 		$('#page-catalog').on('click', '.list-group a', function(){
 			console.log("click catalog");
 			app.showCatalogDetail($(this).data("id"));
+		});				
+		
+		this.setAppParam(function(){				
+			/* Получаем данные с сервера */
+			app.getServerData(app.buildTemplates);
+		}, function(){
+			
 		});
-		
-		this.initUserTemplates();
-		
 		/* Загружаем настройки */
 		/*console.log(cordova.file.dataDirectory);
 		window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
@@ -87,11 +65,7 @@ var app = {
 			createFile(dirEntry, "options.json", isAppend);
 		}, function(e){
 			console.log("Failed file read: " + e.toString());
-		});*/
-		
-		
-		/* Получаем данные с сервера */
-		app.getServerData(app.buildTemplates);
+		});*/			
     },		
 		
 	localloads: {},
@@ -104,6 +78,7 @@ var app = {
 	//server_url: "http://77.41.7.198/api/api.php",
 	chart: {},
 	test: 1,
+	options_dir: "options",
 	
 	options: {
 		currency: "rub",
@@ -111,6 +86,8 @@ var app = {
 		uid: '',
 		sessid: ''
 	},
+	mmfs: {},
+	localPathRoot: "",
 	
 	user: {},
 
@@ -118,16 +95,115 @@ var app = {
 		this.options.sessid = sessid;
 	},
 	
+	setAppParam: function(success,fail) {
+        window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, 
+            function(fs) {
+                app.mmfs = fs;
+                app.localPathRoot = fs.toURL();                
+				console.log('Корневая директория:'+app.localPathRoot);
+				app.mmfs.getDirectory(app.options_dir, {create: true, exclusive: false}, 
+					function(directoryEntry){ 											
+						console.log("Директория "+directoryEntry.fullPath+" готова");
+						
+						app.readFile(app.options_dir+"/",'options.json',
+							function (data) {
+								console.log("data = "+ data);
+								let foptions = JSON.parse(data);
+								if(foptions.options !== undefined){
+									app.options = foptions.options;																		
+								}
+								if(foptions.user !== undefined){
+									app.setUser(foptions.user);
+								}
+								app.initUserTemplates();
+								success();
+							},
+							function (error) { alert(error); success(); }
+						);
+						
+					},
+					
+					function(error){
+						fail("Директория options не создана!");
+					}                            
+				);
+            },
+            function () { navigator.notification.alert('Нет доступа к файловой системе',function(){},'ERROR','Закрыть'); fail(); }
+        )
+    }, 
+	
+	readFile: function (filePath,fileName,filedata,fail) 
+    {
+		console.log("Пробуем прочесть файл "+ filePath +" "+ fileName);
+        if (filePath.trim()!=="") {
+            if (filePath.substr(-1)!=="/") { filePath=filePath+"/"; }
+            if (filePath.substr(0,1)=="/") { filePath=filePath.substr(1); }                    
+        }
+		console.log("Путь =  " + filePath);
+        app.mmfs.getDirectory(filePath, {create: false, exclusive: false}, 
+            function(directoryEntry) {               
+                directoryEntry.getFile(fileName, {create: false, exclusive: false}, 
+                    function(fileEntry){                        
+                        fileEntry.file(
+                            function (file) {
+								console.log("файл "+fileName+ " найден, читаем ");
+                                var reader = new FileReader();
+                                reader.onloadend = function (evt) {
+                                    console.log("файл прочитан");
+                                    filedata(evt.target.result);
+                                };
+                                reader.readAsText(file);
+                            },                                
+                            function(error){
+                                console.log("Не удалось открыть файл "+fileName+"!");
+                                fail("Не удалось открыть файл "+fileName+"!");
+                            }  
+                        );
+                    }, 
+                    function(error){ console.log("Не удалось найти файл "+fileName+"!"); fail("Не удалось найти файл "+fileName+"!"); }
+                );
+            }, 
+            function(error){ console.log("Директория "+filePath+" отсутствует!"); fail("Директория "+filePath+" отсутствует!"); }                         
+        ); 
+    },
+	
+	saveFile: function (filePath,fileName,filedata, success, fail) 
+    {   
+        if (filePath.trim()!=="") {
+            if (filePath.substr(-1)!=="/") { filePath=filePath+"/"; }
+            if (filePath.substr(0,1)=="/") { filePath=filePath.substr(1); }                    
+        }
+        app.mmfs.getDirectory(filePath, {create: false, exclusive: false}, 
+            function(directoryEntry) {
+                directoryEntry.getFile(fileName, {create: true, exclusive: false}, 
+                    function(fileEntry){
+                        fileEntry.createWriter(
+                            function(writer){
+                                writer.write(filedata);                                         
+                                console.log(fileEntry.toURL());
+                                success(fileEntry);
+                            }, function(error){
+                                fail("Ошибка записи данных в файл "+fileName+"!");
+                            });
+                    }, function(error){
+                        fail("Ошибка открытия/создания файла "+fileName+"!");
+                    });
+            },
+            function(error){
+                fail("Нет директории "+filePath+"!");
+            }
+        );
+    },
+	
 	setUser: function(user){
+		
+		console.log("Устанавливаем пользвателя");
+		console.log(user);
 		if(user.id === this.user.id){
 			return true;
 		}
 		
-		this.user = user;
-		
-		if(user.id){
-			$('#enter-container').css({display:"none"});
-		}
+		this.user = user;		
 		
 	},
 	
@@ -158,14 +234,20 @@ var app = {
 	},
 	
 	initUserTemplates: function(){
-		
-		if(!this.isAuthorize()){
+		console.log("Пользователь авторизован " + app.isAuthorize());
+		if(!app.isAuthorize()){
+			console.log("Пользователь авторизован " + app.isAuthorize());
 			$("#detail-message-write-container").css({display:"none"});
 			$("#detail-message-please-login").css({display:"block"});
 			$("#header-login").html("");
+		
+			console.log("показываем контейнер логина");
+			$('#enter-container').css({display:"block"});
+		
 			return true;
 		}
 		
+		$('#enter-container').css({display:"none"});
 		$("#detail-message-write-container").css({display:"block"});
 		$("#detail-message-please-login").css({display:"none"});
 		$("#header-login").html(this.user.name);
@@ -226,8 +308,7 @@ var app = {
 	
 	sendRequest: function(params, action, callback, callbackerror){
 		
-		console.log("SEND REQUEST, callback = ");
-		console.log(callback);
+		console.log("SEND REQUEST, callback = ");		
 		
 		app.LoadImgShow();
 		if(action){
@@ -286,6 +367,8 @@ var app = {
 					if(typeof callback === "function"){
 						callback(respdata.data);					
 					}
+					
+					app.saveOptionsIntoFile();
 				}else{
 					if(typeof callbackerror === "function"){
 						callbackerror(respdata);
@@ -299,7 +382,21 @@ var app = {
 			}, oneErrorRequest);
 	},
 		
-	
+	saveOptionsIntoFile: function(){
+		let fileObj = {
+			options: app.options,
+			user: app.user
+		};
+		app.saveFile(app.options_dir, "options.json", JSON.stringify(fileObj),
+		
+		function(){
+			console.log("файл успешно сохранен");
+		},
+		
+		function(){
+			console.log("Не удалось сохранить файл с настройками");	
+		});
+	},
 	
 	getCurrencyIcon: function(){
 		for(let i = 0; i < data.translates.currencies.length; i++){
@@ -357,17 +454,14 @@ var app = {
 				
 		let app = this;
 				
-		$('#'+id).load(file, function(){			
+		$('#'+id).load(file, function(){
+			console.log("sidebar загружен");
 			app._translate(id);					
 			app.localloads[id] = true;			
 			if(callback){
 				callback();
 			}
-		});
-		
-		
-				
-		
+		});										
 	},			
 	
 	showPage: function(id, isanimate, callback){
@@ -458,7 +552,7 @@ var app = {
 	
 	buildTemplates: function(){
 		app.buildCatalog();
-		app.loadLocal("sidebar", "sidebar.html");				
+		app.loadLocal("sidebar", "sidebar.html", app.initUserTemplates);
 	},
 	
 	buildCatalog: function(){		

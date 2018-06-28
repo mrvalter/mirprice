@@ -1,4 +1,4 @@
-#Thu Jun 28 02:21:23 MSK 2018
+#Fri Jun 29 01:34:58 MSK 2018
 base.0=/home/sworion/www/mirprice/platforms/android/app/build/intermediates/transforms/dexMerger/debug/0
 renamed.0=classes.dex
 file.0=/home/sworion/www/mirprice/platforms/android/app/build/intermediates/transforms/dexMerger/debug/0/classes.dex

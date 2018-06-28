@@ -27,58 +27,8 @@
            
         </div>
 
-        <div class="box-body chat" id="chat-box" style="width: 100%;">
-      <!-- chat item -->
-            <div class="item">             
-              <p class="message">
-                <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 4:15</small>
-                  Smith doe
-                </a>
-                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-              </p>
-            </div>
-            <div style="clear:both;"></div>
-      <!-- /.item -->
-      <!-- chat item -->
-            <div class="item">            
-              <p class="message">
-                <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
-                  Maical Jordan
-                </a>
-                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-              </p>
-            </div>
-       <div class="item">            
-              <p class="message">
-                <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
-                  Maical Jordan
-                </a>
-                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-              </p>
-            </div>
-       <div class="item">            
-              <p class="message">
-                <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
-                  Maical Jordan
-                </a>
-                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-              </p>
-            </div>
-       <div class="item">            
-              <p class="message">
-                <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
-                  Maical Jordan
-                </a>
-                It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-              </p>
-            </div>                    
-    </div>
-      <div style="clear:both; width: 100%;height:100px;"></div>            
+        <div class="box-body chat" id="chat-box" style="width: 100%;"></div>
+        <div style="clear:both; width: 100%;height:100px;"></div>            
     </div>
     
 </div>
@@ -98,8 +48,7 @@
 		let message = $("#detail-input-message").val();
 		if(!message){
 			return false;
-		}
-		alert(app.detail_id);
+		}		
 		
 		let params = {
 			message: $("#detail-input-message").val(),
@@ -107,6 +56,7 @@
 		};
 		
 		app.sendRequest(params, "sendMessage", function(response){
+                        $('#detail-input-message').val("");
 			app.drawCatalogDetail(response);
 		});
 	});

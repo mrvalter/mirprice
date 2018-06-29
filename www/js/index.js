@@ -51,21 +51,13 @@ var app = {
 			app.showCatalogDetail($(this).data("id"));
 		});				
 		
-		this.setAppParam(function(){				
-			/* Получаем данные с сервера */
+		//app.getServerData(app.buildTemplates);
+		this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
 		}, function(){
 			
 		});
-		/* Загружаем настройки */
-		/*console.log(cordova.file.dataDirectory);
-		window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
-			console.log('file system open: ' + dirEntry.name);
-			var isAppend = false;
-			createFile(dirEntry, "options.json", isAppend);
-		}, function(e){
-			console.log("Failed file read: " + e.toString());
-		});*/			
+		
     },		
 		
 	localloads: {},
@@ -221,12 +213,24 @@ var app = {
 			<div class="item">            
               <p class="message">
                 <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> `+messages[i].dateCreate+`</small>
                   `+messages[i].mAuthor+`
 				</a>
                 `+messages[i].message+`
-              </p>
-            </div>`;			
+              </p>`;
+			
+			if(messages[i].answer !== ""){
+				html+=`
+				<p class="answer">
+					<a href="#" class="name">
+					  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> `+messages[i].dateAnswer+`</small>
+					  Admin
+					</a>
+					`+messages[i].answer+`
+				</p>`;
+			}
+			  
+            html += `</div>`;			
 		}
 		
 		$("#chat-box").html(html);
@@ -234,7 +238,7 @@ var app = {
 	},
 	
 	initUserTemplates: function(){
-		console.log("Пользователь авторизован " + app.isAuthorize());
+		
 		if(!app.isAuthorize()){
 			console.log("Пользователь авторизован " + app.isAuthorize());
 			$("#detail-message-write-container").css({display:"none"});
@@ -247,30 +251,18 @@ var app = {
 			return true;
 		}
 		
+		console.log("Обновляем пользовательское отображение" + app.isAuthorize());
 		$('#enter-container').css({display:"none"});
 		$("#detail-message-write-container").css({display:"block"});
 		$("#detail-message-please-login").css({display:"none"});
-		$("#header-login").html(this.user.name);
+		$("#header-login").html(app.user.name);
 	},
 	
 	isAuthorize: function(){
 		return this.user.id ? true : false;
 	},
-	getServerData: function(callback){
-		this.LoadImgShow();
-		
-		if(!this.checkConnection()){
-			this.LoadImgHide();
-			
-			navigator.notification.confirm(
-				'Web connection error! Try again ?', // message
-				 app.onConfirmReLoadNet,		   // callback to invoke with index of button pressed
-				'no internet connection',           // title
-				['Yes','Cancel']     // buttonLabels
-			);
-			return false;
-		}
-		
+	getServerData: function(callback){		
+				
 		if(typeof cordova === 'undefined'){
 			return callback();
 		}						
@@ -306,11 +298,32 @@ var app = {
 	
 	},
 	
-	sendRequest: function(params, action, callback, callbackerror){
-		
-		console.log("SEND REQUEST, callback = ");		
+	sendRequest: function(params, action, callback, callbackerror){				
 		
 		app.LoadImgShow();
+		
+		
+		let resendReq = function(buttonIndex){
+			if(buttonIndex == 2){
+				navigator.app.exitApp();
+			}
+			app.sendRequest(params, action, callback, callbackerror);
+		};
+		
+		if(!this.checkConnection()){
+			this.LoadImgHide();
+			
+			navigator.notification.confirm(
+				'Web connection error! Try again ?', // message
+				 resendReq,		   // callback to invoke with index of button pressed
+				'no internet connection',           // title
+				['Yes','Cancel']     // buttonLabels
+			);
+			return false;
+		}
+		
+		
+		
 		if(action){
 			params.action = action;
 		}

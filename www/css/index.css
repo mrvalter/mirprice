@@ -218,12 +218,12 @@ body {
 }
 
 img.rot {      
-    width: 200px;
+    width: 100px;
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-left: -100px;
-    margin-top: -100px;
+    margin-left: -50px;
+    margin-top: -50px;
     z-index: 1000;
 }
 
@@ -302,6 +302,22 @@ img.rot {
     font-weight: 600;
 }
 
+.chat .item>.answer {
+    margin-left: 40px;
+    color: #798699;
+}
+
+.chat .item>.answer>.name {
+    display: block;
+    font-weight: 600;
+    color: #26c6da;
+}
+
+
+
+
+
+
 a {
     color: #f7f7f7;
 }
@@ -309,4 +325,10 @@ a {
 .input-group .form-control:not(:last-child), .input-group-addon:not(:last-child), .input-group-btn:not(:last-child) > .btn, .input-group-btn:not(:last-child) > .btn-group > .btn, .input-group-btn:not(:last-child) > .dropdown-toggle, .input-group-btn:not(:first-child) > .btn:not(:last-child):not(.dropdown-toggle), .input-group-btn:not(:first-child) > .btn-group:not(:last-child) > .btn {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+}
+
+
+#header-login {
+    float:right;
+    
 }

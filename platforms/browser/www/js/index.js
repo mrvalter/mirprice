@@ -51,21 +51,13 @@ var app = {
 			app.showCatalogDetail($(this).data("id"));
 		});				
 		
-		this.setAppParam(function(){				
-			/* Получаем данные с сервера */
+		app.getServerData(app.buildTemplates);
+		/*this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
 		}, function(){
 			
-		});
-		/* Загружаем настройки */
-		/*console.log(cordova.file.dataDirectory);
-		window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function (dirEntry) {
-			console.log('file system open: ' + dirEntry.name);
-			var isAppend = false;
-			createFile(dirEntry, "options.json", isAppend);
-		}, function(e){
-			console.log("Failed file read: " + e.toString());
-		});*/			
+		});*/
+		
     },		
 		
 	localloads: {},
@@ -81,8 +73,8 @@ var app = {
 	options_dir: "options",
 	
 	options: {
-		currency: "rub",
-		language: "ru",
+		currency: "usd",
+		language: "en",
 		uid: '',
 		sessid: ''
 	},
@@ -225,8 +217,20 @@ var app = {
                   `+messages[i].mAuthor+`
 				</a>
                 `+messages[i].message+`
-              </p>
-            </div>`;			
+              </p>`;
+			
+			if(messages[i].answer !== ""){
+				html+=`
+				<p class="answer">
+					<a href="#" class="name">
+					  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+					  Admin
+					</a>
+					`+messages[i].answer+`
+				</p>`;
+			}
+			  
+            html += `</div>`;			
 		}
 		
 		$("#chat-box").html(html);
@@ -234,7 +238,7 @@ var app = {
 	},
 	
 	initUserTemplates: function(){
-		console.log("Пользователь авторизован " + app.isAuthorize());
+		
 		if(!app.isAuthorize()){
 			console.log("Пользователь авторизован " + app.isAuthorize());
 			$("#detail-message-write-container").css({display:"none"});
@@ -247,10 +251,11 @@ var app = {
 			return true;
 		}
 		
+		console.log("Обновляем пользовательское отображение" + app.isAuthorize());
 		$('#enter-container').css({display:"none"});
 		$("#detail-message-write-container").css({display:"block"});
 		$("#detail-message-please-login").css({display:"none"});
-		$("#header-login").html(this.user.name);
+		$("#header-login").html(app.user.name);
 	},
 	
 	isAuthorize: function(){
@@ -400,7 +405,7 @@ var app = {
 	
 	getCurrencyIcon: function(){
 		for(let i = 0; i < data.translates.currencies.length; i++){
-			if(data.translates.currencies[i].code == data.options.currency){
+			if(data.translates.currencies[i].code == app.options.currency){
 				return data.translates.currencies[i].icon;
 			}
 		}		
@@ -533,7 +538,7 @@ var app = {
 		app.detail_id = item_id;
 		let params = {			
 			item_id: item_id.toString(),
-			currency: data.options.currency
+			currency: app.options.currency
 		};
 		
 		
@@ -544,9 +549,26 @@ var app = {
 		return true;		
 	},			
 
+	buildSettings: function(){
+		$('#settings-language').html("");
+		$('#settings-currency').html("");
+		let languages = data.translates.languages;
+		for(let i=0; i< languages.length; i++){
+			let selected = languages[i].code == app.options.language ? 'selected="selected"' : "";
+			$('#settings-language').append('<option value="'+languages[i].code+'" '+ selected +'>'+languages[i].name+'</option>');
+		}
+
+		let currencies = data.translates.currencies;
+		for(let i=0; i< currencies.length; i++){
+			console.log(currencies[i].code, app.options.currency);
+			let selected = currencies[i].code == app.options.currency ? 'selected="selected"' : "";
+			$('#settings-currency').append('<option value="'+currencies[i].code+'" '+ selected +'>'+currencies[i].name+'</option>');
+		}
+	},
 	rebuildTemplates: function(){
 		app.buildCatalog();
-		app._translate("pages-content");
+		app.buildSettings();
+		app._translate("pages-content");		
 		app.showPage("page-catalog", false);
 	},
 	

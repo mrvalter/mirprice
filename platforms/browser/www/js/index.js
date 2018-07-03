@@ -51,12 +51,12 @@ var app = {
 			app.showCatalogDetail($(this).data("id"));
 		});				
 		
-		app.getServerData(app.buildTemplates);
-		/*this.setAppParam(function(){							
+		//app.getServerData(app.buildTemplates);
+		this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
-		}, function(){
+		}, function(message){
 			
-		});*/
+		});
 		
     },		
 		
@@ -88,6 +88,7 @@ var app = {
 	},
 	
 	setAppParam: function(success,fail) {
+		console.log(cordova.file.externalDataDirectory);
         window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, 
             function(fs) {
                 app.mmfs = fs;
@@ -120,7 +121,7 @@ var app = {
 					}                            
 				);
             },
-            function () { navigator.notification.alert('Нет доступа к файловой системе',function(){},'ERROR','Закрыть'); fail(); }
+            function () { navigator.notification.alert('Нет доступа к файловой системе',function(){},'ERROR','Закрыть'); fail('Нет доступа к файловой системе'); }
         )
     }, 
 	
@@ -148,11 +149,11 @@ var app = {
                             },                                
                             function(error){
                                 console.log("Не удалось открыть файл "+fileName+"!");
-                                fail("Не удалось открыть файл "+fileName+"!");
+                                //fail("Не удалось открыть файл "+fileName+"!");
                             }  
                         );
                     }, 
-                    function(error){ console.log("Не удалось найти файл "+fileName+"!"); fail("Не удалось найти файл "+fileName+"!"); }
+                    function(error){ console.log("Не удалось найти файл "+fileName+"!"); }
                 );
             }, 
             function(error){ console.log("Директория "+filePath+" отсутствует!"); fail("Директория "+filePath+" отсутствует!"); }                         
@@ -213,7 +214,7 @@ var app = {
 			<div class="item">            
               <p class="message">
                 <a href="#" class="name">
-                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+                  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> `+messages[i].dateCreate+`</small>
                   `+messages[i].mAuthor+`
 				</a>
                 `+messages[i].message+`
@@ -223,7 +224,7 @@ var app = {
 				html+=`
 				<p class="answer">
 					<a href="#" class="name">
-					  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> 6:10</small>
+					  <small class="text-muted pull-right"><i class="fa fa-clock-o"></i> `+messages[i].dateAnswer+`</small>
 					  Admin
 					</a>
 					`+messages[i].answer+`
@@ -261,21 +262,8 @@ var app = {
 	isAuthorize: function(){
 		return this.user.id ? true : false;
 	},
-	getServerData: function(callback){
-		this.LoadImgShow();
-		
-		if(!this.checkConnection()){
-			this.LoadImgHide();
-			
-			navigator.notification.confirm(
-				'Web connection error! Try again ?', // message
-				 app.onConfirmReLoadNet,		   // callback to invoke with index of button pressed
-				'no internet connection',           // title
-				['Yes','Cancel']     // buttonLabels
-			);
-			return false;
-		}
-		
+	getServerData: function(callback){		
+				
 		if(typeof cordova === 'undefined'){
 			return callback();
 		}						
@@ -311,11 +299,32 @@ var app = {
 	
 	},
 	
-	sendRequest: function(params, action, callback, callbackerror){
-		
-		console.log("SEND REQUEST, callback = ");		
+	sendRequest: function(params, action, callback, callbackerror){				
 		
 		app.LoadImgShow();
+		
+		
+		let resendReq = function(buttonIndex){
+			if(buttonIndex == 2){
+				navigator.app.exitApp();
+			}
+			app.sendRequest(params, action, callback, callbackerror);
+		};
+		
+		if(!this.checkConnection()){
+			this.LoadImgHide();
+			
+			navigator.notification.confirm(
+				'Web connection error! Try again ?', // message
+				 resendReq,		   // callback to invoke with index of button pressed
+				'no internet connection',           // title
+				['Yes','Cancel']     // buttonLabels
+			);
+			return false;
+		}
+		
+		
+		
 		if(action){
 			params.action = action;
 		}

@@ -99,7 +99,7 @@ var app = {
 						console.log("Директория "+directoryEntry.fullPath+" готова");
 						
 						app.readFile(app.options_dir+"/",'options.json',
-							function (data) {
+							function (data) {								
 								console.log("data = "+ data);
 								let foptions = JSON.parse(data);
 								if(foptions.options !== undefined){
@@ -111,8 +111,11 @@ var app = {
 								app.initUserTemplates();
 								success();
 							},
-							function (error) { alert(error); success(); }
+							function (error) { 
+								success(); 
+							}
 						);
+										
 						
 					},
 					
@@ -153,7 +156,7 @@ var app = {
                             }  
                         );
                     }, 
-                    function(error){ console.log("Не удалось найти файл "+fileName+"!"); }
+                    function(error){ console.log("Не удалось найти файл "+fileName+"!"); fail()}
                 );
             }, 
             function(error){ console.log("Директория "+filePath+" отсутствует!"); fail("Директория "+filePath+" отсутствует!"); }                         
@@ -238,10 +241,9 @@ var app = {
 		
 	},
 	
-	initUserTemplates: function(){
-		
+	initUserTemplates: function(){		
 		if(!app.isAuthorize()){
-			console.log("Пользователь авторизован " + app.isAuthorize());
+			console.log("Пользователь не авторизован " + app.isAuthorize());
 			$("#detail-message-write-container").css({display:"none"});
 			$("#detail-message-please-login").css({display:"block"});
 			$("#header-login").html("");
@@ -270,7 +272,8 @@ var app = {
 		
 		this.sendRequest({}, "getfulldata", function(resp_data) {				
 			app.LoadImgHide();
-			data = resp_data;																
+			data = resp_data;
+			console.log(data);
 			if(callback !== undefined){
 				console.log(callback);
 				callback();

@@ -37,7 +37,7 @@ var app = {
     receivedEvent: function(id) {				
 		
 		
-		this.options.uid = device.uuid ? device.uuid : '';
+		this.options.uid = device.uuid ? device.uuid : 'none';
 		
 		/* Инициализируем страницы и помещаем их за окно */	
 		$('.page').css({
@@ -259,23 +259,7 @@ var app = {
 		}else{
 			$("#detail-message-write-container").css({display:"none"});
 			$("#detail-message-please-login").css({display:"block"});
-		}
-		
-		
-		if(!app.isAuthorize()){
-			$("#header-login").html("");				
-			$('#enter-container').css({display:"block"});
-		
-			return true;
-		}
-				
-		$('#enter-container').css({display:"none"});
-		if(app.user.confirm_phone !== "1"){
-			
-		}
-		
-		$("#header-login").html(app.user.name);
-		
+		}								
 	},
 	
 	isAuthorize: function(){
@@ -479,7 +463,7 @@ var app = {
 		
 	loadLocal: function(id, file, callback){
 		console.log("LOAD LOCAL " + file);
-		if(this.localloads[id]!== undefined){
+		if(this.localloads[id]!== undefined){			
 			return true;
 		}
 								
@@ -505,7 +489,7 @@ var app = {
 		}
 				
 		if(this._isMenuShowed()){			
-			this._hideMenu(id);
+			this._hideMenu(id, isanimate, callback);
 			return true;
 		}
 		
@@ -584,17 +568,27 @@ var app = {
 		});
 		
 		return true;		
-	},			
+	},
+	
 	buildSideBar: function(){
 		console.log("IS_REGISTERED = "+ app.is_registered);
-		if(app.is_registered === "1"){
+		console.log("USER_ID +  =  = "+ app.user.id);
+		console.log("app.user.confirm_phone  = "+ app.user.confirm_phone);
+		
+		if(app.isAuthorize()){
+			$('#menu-registration-button').css({display:"none"});
+			$('#menu-enter-button').css({display:"none"});
+			$("#header-login").html(app.user.name);
+			if(app.user.confirm_phone !== "1"){
+				$('#menu-confirm-fone-button').css({display:"block"});
+			}else{
+				$('#menu-confirm-fone-button').css({display:"none"});
+			}
+		}else if(app.is_registered === "1"){
 			$('#menu-registration-button').css({display:"none"});
 		}
-		
-		if(app.user.id){
-			$('#enter-container').css({display:"none"});
-		}
 	},
+	
 	buildSettings: function(){
 		$('#settings-language').html("");
 		$('#settings-currency').html("");
@@ -611,6 +605,7 @@ var app = {
 			$('#settings-currency').append('<option value="'+currencies[i].code+'" '+ selected +'>'+currencies[i].name+'</option>');
 		}
 	},
+	
 	rebuildTemplates: function(showPage){
 		console.log("SHOW PAGE = "+ showPage);
 		if(showPage === undefined){
@@ -731,7 +726,7 @@ var app = {
 		
 		return dataMainPage;
 	},
-	_hideMenu: function(page_id){
+	_hideMenu: function(page_id, is_animate, callback){
 		console.log("HIDE MENU");
         if(this._isMenuShowed()){
             let left = "-="+this.sidebar_width;
@@ -752,7 +747,7 @@ var app = {
 					}, this.pageAnimateSpeed);
 					this.pageShowed = null;	
 					console.log("AFTER HIDE MENU SHOW PAGE RUN "+ page_id);
-					app.showPage(page_id);
+					app.showPage(page_id, is_animate, callback);
 					
 					
 				}

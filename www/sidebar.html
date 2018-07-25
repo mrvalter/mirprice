@@ -3,11 +3,10 @@
     <div data-scrollbar="true" data-height="100%" data-init="true" style="padding: 10pt 10pt;">
             <div id="enter-container">
                 <button id="menu-registration-button" class="btn btn-warning"><translate data-translate="menu.registration">Registration</translate></button>
-                <button id="menu-confirm-fone-button" style="display:none" class="btn btn-warning"><translate data-translate="menu.confirm-fone">Confirm Phone</translate></button>
+                <button id="menu-confirm-fone-button" style="display:none; float:left;" class="btn btn-warning"><translate data-translate="menu.confirm-fone">Confirm Phone</translate></button>
                 <button id="menu-enter-button" class="btn btn-success" style="float:right;"><translate data-translate="menu.enter">Login</translate></button>
-            </div>
-                <div style="clear:both; height: 10pt"></div>                
-                <div id="header-login"></div>
+                <div id="header-login" style="float:right;"></div>
+            </div>              
                  <div style="clear:both; height: 10pt"></div>
             <!-- begin sidebar user -->
             <!--<ul class="nav">
@@ -46,6 +45,36 @@
     <!-- end sidebar scrollbar -->
 
 	<script>
+            var sendSms = function(){
+                console.log("SEND SMS");
+                let user_id = app.isAuthorize() ? app.user.id : $('#phone_confirm_user_id').val();
+                let data = {user_id: user_id};        
+
+                app.sendRequest(data, "sendSms", function(response){
+                    ///console.log(JSON.stringify(response));
+                    let elid = "reg-phone-confirm";
+                    let errid = elid+"-error";
+                    $('#'+elid).removeClass("is-invalid");
+                    $('#'+errid).html("");                    
+                    $('#reg-phone-confirm-data').html(response);
+                    //$('#reg-phone-confirm-data').html("sdsdsdsd");
+                },
+
+                function(response){
+                    $('#reg-phone-confirm-data').html("");
+                    let fr = response.errors;            
+                    if(fr[0] !== undefined){
+                        for(let i=0; i<fr.length; i++){
+                            let elid = "reg-phone-confirm";
+                            let errid = elid+"-error";
+
+                            $('#'+elid).addClass("is-invalid");
+                            $('#'+errid).html(fr[i]);
+
+                        }
+                    }
+                });
+            };
 		$('#menu-registration-button').click(function(){
 			app.showPage("page-registration", false);
 		});
@@ -57,4 +86,12 @@
                 $('#menu-exit-button').click(function(){
                     app.exitNotice();
                 });
+                
+                $('#menu-confirm-fone-button').click(function(){                   
+                    app.showPage("page-confirm-phone", false, function(){                        
+                        $('#reg-phone-confirm').val("");
+                        $('#reg-phone-confirm-data').html("");
+                         sendSms();
+                    });
+                });                    
 	</script>

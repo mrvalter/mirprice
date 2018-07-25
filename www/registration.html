@@ -114,6 +114,7 @@
                 app.showPage("page-confirm-phone", false, function(){
                     $('#phone_confirm_user_id').val(response.id);
                     $('#reg-phone-confirm').val("");
+                    sendSms();
                 });                                
             }            
         },

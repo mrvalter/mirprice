@@ -1,0 +1,66 @@
+<div class="main-login main-center bg-dark">
+     <div id="reg-phone-confirm-data" style="color: green;"></div>
+    <form id="submit-phone-form" class="form-horizontal" method="post" action="#">
+        <input type="hidden" name="user_id" id="phone_confirm_user_id" />
+         <div id="reg-gr-name" class="form-group">
+            <label for="reg-phone-confirm" class="cols-sm-2 control-label"><translate data-translate="reg.confirm_code"></translate></label>
+                <div class="cols-sm-10">                        
+                        <div class="input-group">                        
+                            <input type="number" class="form-control" name="phone-confirm" id="reg-phone-confirm">
+                            <div id="reg-phone-confirm-error" class="invalid-feedback"></div>                                                        
+                        </div>
+                    <div style="clear:both;"></div>                   
+                </div>
+        </div>
+
+        <div class="form-group">
+            <button id="registration-phone-confirm-button" type="button" class="btn btn-primary btn-lg btn-block login-button"><translate data-translate="reg.send"></translate></button>
+            <div style="clear:both; height: 20px;"></div>
+            <div style="text-align: center; text-decoration: underline"><a id="confirm-send-sms" href="#"><translate data-translate="reg.send_sms"></translate></a></div>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    $('#registration-phone-confirm-button').click(function(){
+        var data = $('#submit-phone-form').serializeArray();
+        var sendData = {};
+        for(let i=0; i < data.length; i++){
+            sendData[data[i].name] = data[i].value
+        }
+        app.sendRequest(sendData, "confirmPhone", function(response){
+            $('#alredy_registered').css({display: "block"});
+            //$('#submit-phone-form').css({display:"none"});
+            //$('#menu-registration-button').css({display:"none"});
+            app.is_registered = "1";
+            
+            if(app.isAuthorize()){
+                app.rebuild("page-catalog");
+            }else{
+                app.rebuild("page-login");
+            }
+            
+            
+        }, function(response){
+            let fr = response.form_errors;
+            if(fr[0] !== undefined){
+                for(let i=0; i<fr.length; i++){
+                    let elid = "reg-"+fr[i].name;
+                    let errid = elid+"-error";
+                                        
+                    $('#'+elid).addClass("is-invalid");
+                    $('#'+errid).html(fr[i].error);
+                    $('#reg-phone-confirm-data').html("");
+                    
+                }
+            }else {
+                alert("fail phone confirm");
+            }
+        });
+   });        
+    
+    $('#confirm-send-sms').click(function(){
+        sendSms();
+    });
+</script>

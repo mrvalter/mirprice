@@ -9,19 +9,19 @@
         <label for="settings-currency" class="cols-sm-2 control-label"><translate data-translate="settings.currency"></translate></label>            
         <select id="settings-currency" class="form-control"></select>
     </div>
+    
+    <div class="form-group ">
+        <button id="settings-submit-button" type="button" class="btn btn-primary btn-lg btn-block login-button"><translate data-translate="settings.confirm"></translate></button>
+    </div>
 </form>
 </div>
 
 <script>
     app.buildSettings();
     
-    $('#settings-currency').change(function(){
-        app.options.currency = $(this).val();        
-        app.rebuild();
-    });
-    
-     $('#settings-language').change(function(){        
-        app.options.language = $(this).val();        
+    $('#settings-submit-button').click(function(){
+        app.options.currency = $('#settings-currency').val();
+        app.options.language = $('#settings-language').val();        
         app.rebuild();
     });
     

@@ -37,7 +37,7 @@ var app = {
     receivedEvent: function(id) {				
 		
 		
-		this.options.uid = device.uuid ? device.uuid : '';
+		this.options.uid = device.uuid ? device.uuid : 'none';
 		
 		/* Инициализируем страницы и помещаем их за окно */	
 		$('.page').css({
@@ -48,7 +48,7 @@ var app = {
 			
 		$('#page-catalog').on('click', '.list-group a', function(){
 			console.log("click catalog");
-			app.showCatalogDetail($(this).data("id"));
+			app.showCatalogDetail($(this).data("id"), this);
 		});				
 		
 		//app.getServerData(app.buildTemplates);
@@ -82,6 +82,8 @@ var app = {
 	localPathRoot: "",
 	
 	user: {},
+	is_registered: "0",
+	detail_id: null,
 
 	setSessId: function(sessid){
 		this.options.sessid = sessid;
@@ -108,6 +110,10 @@ var app = {
 								if(foptions.user !== undefined){
 									app.setUser(foptions.user);
 								}
+								if(foptions.is_registered !== undefined){
+									app.is_registered = foptions.is_registered;
+								}
+								
 								app.initUserTemplates();
 								success();
 							},
@@ -195,19 +201,23 @@ var app = {
 		
 		console.log("Устанавливаем пользвателя");
 		console.log(user);
-		if(user.id === this.user.id){
+		/*if(user.id === this.user.id){
 			return true;
-		}
+		}*/				
 		
 		this.user = user;		
 		
 	},
 	
-	drawCatalogDetail: function(resp_data){
+	drawCatalogDetail: function(resp_data, el){		
 		app.initUserTemplates();
 		var points =  resp_data.points;
 		app.chart = app.buildChart(points);
 		app.buildMessages(resp_data.messages);
+		if(el !== undefined){
+			$("#page-detail-title").html("");
+			$(el).clone().appendTo("#page-detail-title");
+		}
 	},
 	
 	buildMessages: function(messages){
@@ -241,24 +251,19 @@ var app = {
 		
 	},
 	
-	initUserTemplates: function(){		
-		if(!app.isAuthorize()){
-			console.log("Пользователь не авторизован " + app.isAuthorize());
+	initUserTemplates: function(){
+		app.buildSideBar();
+		
+		var message_send = app.isAuthorize() && app.user.confirm_phone === "1";
+		console.log("MESSAGE SEND auth = " + app.isAuthorize() + ", confirm= " + app.user.confirm_phone);
+		console.log();
+		if(message_send){
+			$("#detail-message-write-container").css({display:"block"});
+			$("#detail-message-please-login").css({display:"none"});
+		}else{
 			$("#detail-message-write-container").css({display:"none"});
 			$("#detail-message-please-login").css({display:"block"});
-			$("#header-login").html("");
-		
-			console.log("показываем контейнер логина");
-			$('#enter-container').css({display:"block"});
-		
-			return true;
-		}
-		
-		console.log("Обновляем пользовательское отображение" + app.isAuthorize());
-		$('#enter-container').css({display:"none"});
-		$("#detail-message-write-container").css({display:"block"});
-		$("#detail-message-please-login").css({display:"none"});
-		$("#header-login").html(app.user.name);
+		}								
 	},
 	
 	isAuthorize: function(){
@@ -358,7 +363,7 @@ var app = {
 		cordova.plugin.http.post(this.server_url, http_params, 
 			{ }, function(response) {
 				app.LoadImgHide();
-				
+				console.log(response.data);
 				let respdata = {};
 					
 				try {
@@ -402,7 +407,8 @@ var app = {
 	saveOptionsIntoFile: function(){
 		let fileObj = {
 			options: app.options,
-			user: app.user
+			user: app.user,
+			is_registered: app.is_registered
 		};
 		app.saveFile(app.options_dir, "options.json", JSON.stringify(fileObj),
 		
@@ -423,8 +429,8 @@ var app = {
 		}		
 	},
 	
-	rebuild: function(){		
-		app.getServerData(app.rebuildTemplates);
+	rebuild: function(show_page){		
+		app.getServerData(app.rebuildTemplates.bind(this,show_page));
 	},
 		
 	/*onConfirmReLoadNet: function(label){		
@@ -460,8 +466,8 @@ var app = {
 	},
 		
 	loadLocal: function(id, file, callback){
-				
-		if(this.localloads[id]!== undefined){
+		console.log("LOAD LOCAL " + file);
+		if(this.localloads[id]!== undefined){			
 			return true;
 		}
 								
@@ -471,11 +477,11 @@ var app = {
 				
 		let app = this;
 				
-		$('#'+id).load(file, function(){
-			console.log("sidebar загружен");
+		$('#'+id).load(file, function(){			
 			app._translate(id);					
 			app.localloads[id] = true;			
 			if(callback){
+				console.log("AFTER LOAD LOCAL RUN "+ callback);
 				callback();
 			}
 		});										
@@ -487,13 +493,13 @@ var app = {
 		}
 				
 		if(this._isMenuShowed()){			
-			this._hideMenu(id);
+			this._hideMenu(id, isanimate, callback);
 			return true;
-		}
+		}				
 		
 		let page = $('#'+id);
 		let loadPage = page.data("load");				
-		
+		console.log("SHOWPAGE FUNCTION ID = "+ id + " PAGE SHOWED  = " + app.pageShowed);
 		/* Если страница не загружена загружаем ее и показываем */
 		if(loadPage !== undefined && this.localloads[id] === undefined){			
 			return this.loadLocal(id, loadPage, this.showPage.bind(this, id, isanimate, callback));
@@ -505,18 +511,20 @@ var app = {
 		
 		
 		if(isanimate){			
-			if(id !== this.pageShowed && this.pageShowed !== null){
-				$('#'+this.pageShowed).animate({left: '-='+display_width}, this.pageAnimateSpeed, function(){
+			console.log("IS_ANIMATE");
+			if(id !== app.pageShowed && app.pageShowed !== null){
+				$('#'+app.pageShowed).animate({left: '-='+display_width}, app.pageAnimateSpeed, function(){
 					$(this).css({left: display_width});
-				});
+				});				
 			}
 						
-			page.animate({left: 0}, this.pageAnimateSpeed);
+			page.animate({left: 0}, app.pageAnimateSpeed);
 			
 		}else{
-			if(id !== this.pageShowed && this.pageShowed !== null){				
-				$('#'+this.pageShowed).css("left", display_width+"px");
-				console.log($('#'+this.pageShowed).css("left"), display_width+"px !!!!!!!!!!!!!!!!");
+			console.log("NOT_ANIMATE");
+			if(id !== app.pageShowed && app.pageShowed !== null){				
+				$('#'+app.pageShowed).css("left", display_width+"px");
+				console.log($('#'+app.pageShowed).css("left"), display_width+"px !!!!!!!!!!!!!!!!");
 			}
 			
 			page.css({				
@@ -524,8 +532,10 @@ var app = {
 			});
 		}												
 		
-		this.pageShowed = id;
+		app.pageShowed = id;
+		console.log(callback);
 		if(typeof callback === 'function'){
+			console.log("CALLBACK RUN");
 			callback();
 		}
 		
@@ -540,13 +550,14 @@ var app = {
         }
     },		
 	
-	showCatalogDetail: function(item_id){		
+	showCatalogDetail: function(item_id, el){		
 		app._hideMenu();
-		app.showPage("page-catalog-detail", true, app._initCatalogDetail.bind(this, item_id));						
+		app.showPage("page-catalog-detail", true, app._initCatalogDetail.bind(this, item_id, el));
+		app.detail_id = item_id;
 	},
 	
-	_initCatalogDetail: function(item_id){
-		
+	_initCatalogDetail: function(item_id, el){
+		console.log("INIT CATALOG DETAIL");
 		app.detail_id = item_id;
 		let params = {			
 			item_id: item_id.toString(),
@@ -554,13 +565,34 @@ var app = {
 		};
 		
 		
-		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {			
-			  app.drawCatalogDetail(resp_data);
+		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {
+			console.log("GET STATISTICS");
+			console.log(JSON.stringify(app.user));
+			app.drawCatalogDetail(resp_data, el);
 		});
 		
 		return true;		
-	},			
-
+	},
+	
+	buildSideBar: function(){
+		console.log("IS_REGISTERED = "+ app.is_registered);
+		console.log("USER_ID +  =  = "+ app.user.id);
+		console.log("app.user.confirm_phone  = "+ app.user.confirm_phone);
+		
+		if(app.isAuthorize()){
+			$('#menu-registration-button').css({display:"none"});
+			$('#menu-enter-button').css({display:"none"});
+			$("#header-login").html(app.user.name);
+			if(app.user.confirm_phone !== "1"){
+				$('#menu-confirm-fone-button').css({display:"block"});
+			}else{
+				$('#menu-confirm-fone-button').css({display:"none"});
+			}
+		}else if(app.is_registered === "1"){
+			$('#menu-registration-button').css({display:"none"});
+		}
+	},
+	
 	buildSettings: function(){
 		$('#settings-language').html("");
 		$('#settings-currency').html("");
@@ -577,15 +609,28 @@ var app = {
 			$('#settings-currency').append('<option value="'+currencies[i].code+'" '+ selected +'>'+currencies[i].name+'</option>');
 		}
 	},
-	rebuildTemplates: function(){
+	
+	rebuildTemplates: function(showPage){
+		console.log("SHOW PAGE = "+ showPage);
+		if(showPage === undefined){
+			showPage = "page-catalog";
+		}
 		app.buildCatalog();
 		app.buildSettings();
-		app._translate("pages-content");		
-		app.showPage("page-catalog", false);
+		app.buildSideBar();
+		app._translate("pages-content");
+		
+		if(showPage == "page-catalog-detail"){
+			app.showCatalogDetail(app.detail_id);
+		}else{
+			app.showPage(showPage, false);
+		}
 	},
 	
 	buildTemplates: function(){
 		app.buildCatalog();
+		//app.pageShowed = "page-catalog";
+		app.showPage("page-catalog", false);
 		app.loadLocal("sidebar", "sidebar.html", app.initUserTemplates);
 	},
 	
@@ -625,7 +670,7 @@ var app = {
 		}
 		strhtml += '</div>';		
 		$('#page-catalog').html(strhtml);
-		app.showPage("page-catalog", false);						
+		//app.showPage("page-catalog", false);						
 		//$('#img').hide();		
 	},
 	
@@ -685,7 +730,8 @@ var app = {
 		
 		return dataMainPage;
 	},
-	_hideMenu: function(page_id){
+	_hideMenu: function(page_id, is_animate, callback){
+		console.log("HIDE MENU");
         if(this._isMenuShowed()){
             let left = "-="+this.sidebar_width;
             this.sideBar.data('visible', '');
@@ -703,13 +749,14 @@ var app = {
 					$('#'+this.pageShowed).animate({
 						left: app._getDisplayWidth(),
 					}, this.pageAnimateSpeed);
-					this.pageShowed = null;								
-					app.showPage(page_id);
+					this.pageShowed = null;	
+					console.log("AFTER HIDE MENU SHOW PAGE RUN "+ page_id);
+					app.showPage(page_id, is_animate, callback);
 					
 					
 				}
 			}
-		}else if(page_id){
+		}else if(page_id){			
 			app.showPage(page_id);
 		}
 		return true;
@@ -771,7 +818,7 @@ var app = {
 };
 
 app.initialize();
-
+var angle=0;
 $(document).ready(function(){
 	
 		
@@ -794,6 +841,12 @@ $(document).ready(function(){
 			width: app._getDisplayWidth(),
 		});
 	});
+	
+	
+	/*setInterval(function(){
+	  angle+=5;
+	$("#reload-head").rotate(angle);
+	},50);*/
 	
 	
 	/* Верхнее меню */
@@ -844,16 +897,16 @@ $(document).ready(function(){
 				
 			}
 			
-			if(direction == "down"){
-				if(phase == "cancel"){
-					$("#update-div").css({top: 0});
+			if(app.pageShowed != "page-login" && app.pageShowed != "page-registration"){
+				if(direction == "down"){
+					if(phase == "cancel"){
+						$("#update-div").css({top: 0});
+					}
+					else if($(this).scrollTop() <= 0 && distance < 60){
+						$("#update-div").css({top: distance});
+					}			
 				}
-				else if($(this).scrollTop() <= 0 && distance < 60){
-					$("#update-div").css({top: distance});
-				}
-				
-				console.log(direction, phase);
-			}						
+			}
 		},
 				
 		swipeLeft: function (event, direction, distance, duration, fingerCount) {
@@ -904,11 +957,12 @@ $(document).ready(function(){
 		},
 		
 		swipeDown: function (event, direction, distance, duration, fingerCount) {			
-			
-			$("#update-div").css({top: 0});
-			
-			if($(this).scrollTop() <= 0 && distance >= 60){				
-				app.rebuild();
+			if(app.pageShowed != "page-login" && app.pageShowed != "page-registration"){
+				$("#update-div").css({top: 0});
+
+				if($(this).scrollTop() <= 0 && distance >= 60){														
+					app.rebuild(app.pageShowed);					
+				}
 			}
 		},
 		

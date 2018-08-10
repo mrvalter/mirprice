@@ -48,15 +48,15 @@ var app = {
 			
 		$('#page-catalog').on('click', '.list-group a', function(){
 			console.log("click catalog");
-			app.showCatalogDetail($(this).data("id"));
+			app.showCatalogDetail($(this).data("id"), this);
 		});				
 		
-		//app.getServerData(app.buildTemplates);
-		this.setAppParam(function(){							
+		app.getServerData(app.buildTemplates);
+		/*this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
 		}, function(message){
 			
-		});
+		});*/
 		
     },		
 		
@@ -87,6 +87,7 @@ var app = {
 
 	setSessId: function(sessid){
 		this.options.sessid = sessid;
+		
 	},
 	
 	setAppParam: function(success,fail) {
@@ -209,11 +210,15 @@ var app = {
 		
 	},
 	
-	drawCatalogDetail: function(resp_data){		
+	drawCatalogDetail: function(resp_data, el){		
 		app.initUserTemplates();
 		var points =  resp_data.points;
 		app.chart = app.buildChart(points);
 		app.buildMessages(resp_data.messages);
+		if(el !== undefined){
+			$("#page-detail-title").html("");
+			$(el).clone().appendTo("#page-detail-title");
+		}
 	},
 	
 	buildMessages: function(messages){
@@ -491,7 +496,7 @@ var app = {
 		if(this._isMenuShowed()){			
 			this._hideMenu(id, isanimate, callback);
 			return true;
-		}
+		}				
 		
 		let page = $('#'+id);
 		let loadPage = page.data("load");				
@@ -546,13 +551,13 @@ var app = {
         }
     },		
 	
-	showCatalogDetail: function(item_id){		
+	showCatalogDetail: function(item_id, el){		
 		app._hideMenu();
-		app.showPage("page-catalog-detail", true, app._initCatalogDetail.bind(this, item_id));
+		app.showPage("page-catalog-detail", true, app._initCatalogDetail.bind(this, item_id, el));
 		app.detail_id = item_id;
 	},
 	
-	_initCatalogDetail: function(item_id){
+	_initCatalogDetail: function(item_id, el){
 		console.log("INIT CATALOG DETAIL");
 		app.detail_id = item_id;
 		let params = {			
@@ -564,7 +569,7 @@ var app = {
 		this.sendRequest(params, "getstatisticbyitemid", function(resp_data) {
 			console.log("GET STATISTICS");
 			console.log(JSON.stringify(app.user));
-			app.drawCatalogDetail(resp_data);
+			app.drawCatalogDetail(resp_data, el);
 		});
 		
 		return true;		

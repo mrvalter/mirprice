@@ -33,6 +33,19 @@
         </div>
 
         <div class="form-group">
+                <label for="reg-phone" class="cols-sm-2 control-label"><translate data-translate="reg.phone"></translate></label>
+                <div class="cols-sm-10">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">+</span>
+                            </div>
+                                <input type="number" class="form-control" name="phone" id="reg-phone">
+                                <div id="reg-phone-error" class="invalid-feedback"></div>
+                        </div>
+                </div>
+        </div>
+    
+        <div class="form-group">
                 <label for="reg-login" class="cols-sm-2 control-label"><translate data-translate="reg.login"></translate></label>
                 <div class="cols-sm-10">
                         <div class="input-group">
@@ -77,10 +90,14 @@
         <div class="login-register">    
  </div>
 </form>
+
+<div id="alredy_registered" style="display: none">
+    <translate data-translate="reg.alredy_registered"></translate>
+</div>
 </div>
 
 <script>    	
-	
+   
    $('#registration-submit-button').click(function(){
         $('#registration-form input').removeClass("is-invalid");
         $('#registration-form .invalid-feedback').html("");
@@ -92,7 +109,14 @@
         }
                 
         app.sendRequest(sendData, "registration", function(response){
-            app.rebuild();
+            console.log(JSON.stringify(response));
+            if(response.id){                
+                app.showPage("page-confirm-phone", false, function(){
+                    $('#phone_confirm_user_id').val(response.id);
+                    $('#reg-phone-confirm').val("");
+                    sendSms();
+                });                                
+            }            
         },
         
         function(response){
@@ -108,9 +132,6 @@
                 }
             }
         });
-   }); 
-   
-   
-
+   });   
 
 </script>

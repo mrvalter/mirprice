@@ -51,12 +51,12 @@ var app = {
 			app.showCatalogDetail($(this).data("id"), this);
 		});				
 		
-		//app.getServerData(app.buildTemplates);
-		this.setAppParam(function(){							
+		app.getServerData(app.buildTemplates);
+		/*this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
 		}, function(message){
 			
-		});
+		});*/
 		
     },		
 		
@@ -87,6 +87,7 @@ var app = {
 
 	setSessId: function(sessid){
 		this.options.sessid = sessid;
+		
 	},
 	
 	setAppParam: function(success,fail) {
@@ -883,18 +884,28 @@ $(document).ready(function(){
 	
 	$(".page, #sidebar").swipe({
 		swipeStatus: function(event, phase, direction, distance){
+			console.log(direction+' '+phase+" "+distance);
 			let el = $(this);
 			let depend_id = el.data("depends");
 			
-			if(direction == "right" && depend_id && !app._isMenuShowed()){
+			if(direction == "right" && depend_id && !app._isMenuShowed()){				
 				el.css({
 					left: distance
 				});
 												
 				$('#'+depend_id).css({
 					left: distance-app._getDisplayWidth()
-				});
-				
+				});			
+			}
+			
+			if(direction == "right" && phase == "cancel"){
+				$(this).animate({left: 0}, app.pageAnimateSpeed);
+				if(depend_id){					
+					$('#'+depend_id).animate({
+						left: -app._getDisplayWidth(),
+					}, app.pageAnimateSpeed);
+					
+				}
 			}
 			
 			if(app.pageShowed != "page-login" && app.pageShowed != "page-registration"){
@@ -945,12 +956,16 @@ $(document).ready(function(){
 					});
 				}
 			}else{
+				
 				$(this).animate({left: 0}, app.pageAnimateSpeed);
+				
 				if(depend_id){					
 					$('#'+depend_id).animate({
 						left: -app._getDisplayWidth(),
 					}, app.pageAnimateSpeed);
+					
 				}
+				
 			}
 			return false;
 

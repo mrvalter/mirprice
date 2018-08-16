@@ -290,6 +290,7 @@ img.rot {
 
 .chat .item {
     position:relative;
+	font-size: 12px;
     /*margin-bottom: 10px;*/
 }
 
@@ -304,7 +305,7 @@ img.rot {
 }
 
 .chat .item>.answer {
-    margin-left: 40px;
+    margin-left: 10px;
     color: #798699;
 }
 
@@ -315,7 +316,9 @@ img.rot {
 }
 
 
-
+#page-catalog badge{
+	font-size: 16px;
+}
 
 
 

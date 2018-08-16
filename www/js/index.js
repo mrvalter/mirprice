@@ -211,7 +211,8 @@ var app = {
 	},
 	
 	drawCatalogDetail: function(resp_data, el){		
-		app.initUserTemplates();
+		app.loadLocal("page-catalog-detail-graf", "catalog_detail_graf.html");
+		app.initUserTemplates();		
 		var points =  resp_data.points;
 		app.chart = app.buildChart(points);
 		app.buildMessages(resp_data.messages);
@@ -479,7 +480,7 @@ var app = {
 		let app = this;
 				
 		$('#'+id).load(file, function(){			
-			app._translate(id);					
+			app._translate(id);				
 			app.localloads[id] = true;			
 			if(callback){
 				console.log("AFTER LOAD LOCAL RUN "+ callback);
@@ -553,7 +554,7 @@ var app = {
 	
 	showCatalogDetail: function(item_id, el){		
 		app._hideMenu();
-		app.showPage("page-catalog-detail", true, app._initCatalogDetail.bind(this, item_id, el));
+		app.showPage("page-catalog-detail", true, app._initCatalogDetail.bind(this, item_id, el));		
 		app.detail_id = item_id;
 	},
 	
@@ -661,7 +662,7 @@ var app = {
 						</div>
 						<div class="col-6 catalog catalog-right" style="text-align: right;">
 							<div>
-							<span class="badge">`+item.price+` <i class="fa `+app.getCurrencyIcon()+`" aria-hidden="true"></i></span>						
+							<span>`+item.price+` <i class="fa `+app.getCurrencyIcon()+`" aria-hidden="true"></i></span>						
 							</div>							
 						</div>
 					</a>`;
@@ -884,6 +885,7 @@ $(document).ready(function(){
 			//console.log(direction+' '+phase+" "+distance);
 			let el = $(this);
 			let depend_id = el.data("depends");
+			let swipeleft = el.data("swipeleft");
 			
 			if(direction == "right" && depend_id && !app._isMenuShowed()){				
 				el.css({
@@ -905,6 +907,27 @@ $(document).ready(function(){
 				}
 			}
 			
+			if(direction == "left" && swipeleft && !app._isMenuShowed()){
+				
+				if(phase == "cancel"){
+					$(this).animate({left: 0}, app.pageAnimateSpeed);
+					$('#'+swipeleft).css({
+						left: app._getDisplayWidth()
+					});
+					return true;
+				}
+				
+				el.css({
+					left: -distance
+				});
+												
+				$('#'+swipeleft).css({
+					left: app._getDisplayWidth()-distance
+				});		
+				console.log(app._getDisplayWidth()-distance);
+			}
+			
+			
 			if(app.pageShowed != "page-login" && app.pageShowed != "page-registration"){
 				if(direction == "down"){
 					if(phase == "cancel"){
@@ -920,8 +943,34 @@ $(document).ready(function(){
 		swipeLeft: function (event, direction, distance, duration, fingerCount) {
 			if(app._isMenuShowed()){
 				app.toggleMenu();
+				return false;
 			}
-			return false;
+			let swipeleft = $(this).data("swipeleft");
+			if(!swipeleft){
+				return false;
+			}
+			
+			
+			if(distance > app._getDisplayWidth()/3){
+				$(this).animate({
+					left: app._getDisplayWidth(),
+				}, app.pageAnimateSpeed);
+				
+				$('#'+swipeleft).animate({
+					left: 0,
+				}, app.pageAnimateSpeed, function(){
+					app.pageShowed = swipeleft;
+				});
+			}else {
+				$(this).animate({
+					left: 0,
+				}, app.pageAnimateSpeed);
+				
+				$('#'+swipeleft).animate({
+					left: app._getDisplayWidth()
+				}, app.pageAnimateSpeed);
+			}
+			
 		},
 		
 		swipeRight: function (event, direction, distance, duration, fingerCount) {

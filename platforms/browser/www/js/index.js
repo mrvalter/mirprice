@@ -71,7 +71,7 @@ var app = {
 	chart: {},
 	test: 1,
 	options_dir: "options",
-	
+	last_points: [],
 	options: {
 		currency: "usd",
 		language: "en",
@@ -211,10 +211,12 @@ var app = {
 	},
 	
 	drawCatalogDetail: function(resp_data, el){		
-		app.loadLocal("page-catalog-detail-graf", "catalog_detail_graf.html");
-		app.initUserTemplates();		
-		var points =  resp_data.points;
-		app.chart = app.buildChart(points);
+		var points =  resp_data.points;		
+		//app.chart = app.buildChart(points);
+		
+		app.loadLocal("page-catalog-detail-graf", "catalog_detail_graf.html", app.buildChart.bind(this, points));
+		
+		app.initUserTemplates();				
 		app.buildMessages(resp_data.messages);
 		if(el !== undefined){
 			$("#page-detail-title").html("");
@@ -392,6 +394,10 @@ var app = {
 						callback(respdata.data);					
 					}
 					
+					if(respdata.data.points !== undefined){
+						app.last_points = respdata.data.points;
+					}
+					
 					app.saveOptionsIntoFile();
 				}else{
 					if(typeof callbackerror === "function"){
@@ -484,7 +490,7 @@ var app = {
 			app.localloads[id] = true;			
 			if(callback){
 				console.log("AFTER LOAD LOCAL RUN "+ callback);
-				callback();
+				callback();				
 			}
 		});										
 	},			
@@ -673,11 +679,67 @@ var app = {
 		//$('#img').hide();		
 	},
 	
-	buildChart: function(points){	
+	buildChart: function(points, period_type, graf){
 		
-		console.log("points to chart", points);
-		console.log(chart);
+		if(period_type === undefined){
+			period_type = $("#chart-settings .chart-period.active").data("period");
+		}
 		
+		if(graf === undefined){
+			graf = $("#chart-settings .chart_type_icon.active").data("type");
+		}
+		
+		console.log("GRAF = "+graf);
+		if(graf === undefined){
+			graf = "line";
+		}
+		
+		var chartOptions = {
+				legend: {
+					display: false,
+					labels: {
+						// This more specific font property overrides the global property
+						fontColor: 'black'
+					}
+				},
+				tooltips: {
+				  enabled: false,  
+				},
+
+				scales: {
+					yAxes: [{                
+						ticks: {
+							beginAtZero:true
+						},
+						gridLines: {
+							color: "#798699",
+						}
+					}],
+					xAxes: [{
+                                            type: 'time',
+                                            time: {
+                                                unit: 'month'
+                                            },
+                                            gridLines: {
+                                                    color: "#798699",
+                                            }
+					}]
+				}
+			};
+			var chartData = {
+				/*labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],*/
+				datasets: [{
+                                    data: [],
+                                    backgroundColor: "rgba(38,198,218,0.2)",               
+                                    borderColor: '#26c6da',
+                                    pointBackgroundColor: '#26c6da',            
+                                    borderWidth: 1,
+                                    fillColor           : 'rgba(38,198,218,0)',
+
+				}]
+			};
+			
+			
 		let pData = [];
 		
 		for(let i=0; i < points.length; i++){
@@ -694,7 +756,33 @@ var app = {
 			}
 		}
 		
+		chartData.datasets[0].data = pData[0];
+		if(period_type === "m"){
+			chartOptions.scales.xAxes[0].time.unit = "day";
+		}else{
+			chartOptions.scales.xAxes[0].time.unit = "month";
+		}
+		
+		var lch = $('#lineChart');
+		chart = new Chart(lch, {
+			type: graf,
+			data: chartData,
+			options: chartOptions
+		});
+		
+		
+		return;
 		chart.data.datasets[0].data = pData[0];
+		if(period_type === "m"){
+			chart.options.scales.xAxes[0].time.unit = "day";
+		}else{
+			chart.options.scales.xAxes[0].time.unit = "month";
+		}
+		
+		
+		chart.type = graf;
+		
+		
 		chart.update(); // Calling update no				
 	},
 	

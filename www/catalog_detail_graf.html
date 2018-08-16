@@ -6,80 +6,51 @@
             </div>
             <div class="box-body">
               <div class="chart">
-                <canvas id="lineChart" style="height:250px; width: 100%;  background-color: #2d353c"></canvas>
+                <canvas id="lineChart" style="height:400px; width: 100%;  background-color: #2d353c"></canvas>
               </div>
             </div>
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
 </div>
+<div id="chart-settings" class="row">
+    <div class="col-8">        
+        <div class="chart-period active" data-period="y">1г</div>
+        <div class="chart-period" data-period="6m">6мес</div>
+        <div class="chart-period" data-period="m">1мес</div>        
+    </div>
+    <div class="col-4">
+        <div class="chart_type_icon type_line active" data-type="line"></div>
+        <div class="chart_type_icon type_column" data-type="bar"></div>
+    </div>
+</div>
+
+
 
 <script>
-	var pData = [
-                {
-                    t: new Date("2018-2-09"),
-                    y: "1"
-                }, 
-                {
-                    t: new Date("2018-3-09"),
-                    y: "10"
-                },
-                {
-                    t: new Date("2018-12-09"),
-                    y: "13"
-                },
-                {
-                    t: new Date("2018-12-12"),
-                    y: "13"
-                }
-            ];
-							
-                var lch = $('#lineChart');
-		chart = new Chart(lch, {
-			type: 'line',
-			data: {
-				/*labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],*/
-				datasets: [{
-					data: pData,
-					backgroundColor: "rgba(38,198,218,0.2)",               
-					borderColor: '#26c6da',
-					pointBackgroundColor: '#26c6da',            
-					borderWidth: 1,
-					fillColor           : 'rgba(38,198,218,0)',
-
-				}]
-			},
-			options: {
-				legend: {
-					display: false,
-					labels: {
-						// This more specific font property overrides the global property
-						fontColor: 'black'
-					}
-				},
-				tooltips: {
-				  enabled: false,  
-				},
-
-				scales: {
-					yAxes: [{                
-						ticks: {
-							beginAtZero:true
-						},
-						gridLines: {
-							color: "#798699",
-						}
-					}],
-					xAxes: [{
-                                            type: 'time',
-                                            time: {
-                                                     unit: 'month'
-                                            },
-                                            gridLines: {
-                                                    color: "#798699",
-                                            }
-					}]
-				}
-			}
-		});
+    
+        $("#chart-settings .chart-period").click(function(){
+            $("#chart-settings .chart-period").removeClass("active");
+            $(this).addClass("active");
+            var period_type = $(this).data("period");
+            let params = {
+                    period_type: period_type,
+                    item_id: app.detail_id,			
+            };
+            var gr_type =  $("#chart-settings .chart_type_icon.active").data("type");
+            app.sendRequest(params, "getStatisticByItemId", function(response){
+                var points =  response.points;
+                                
+		app.chart = app.buildChart(points, period_type, gr_type);
+            });
+        });
+        
+        $("#chart-settings .chart_type_icon").click(function(){
+            $("#chart-settings .chart_type_icon").removeClass("active");
+            $(this).addClass("active");
+            var period_type = $("#chart-settings .chart-period.active").data("period");
+            var gr_type = $(this).data("type");
+            app.chart = app.buildChart(app.last_points, period_type, gr_type);
+            
+        });        	
 </script>

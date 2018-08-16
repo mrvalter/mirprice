@@ -662,10 +662,7 @@ var app = {
 						<div class="col-6 catalog catalog-right" style="text-align: right;">
 							<div>
 							<span class="badge">`+item.price+` <i class="fa `+app.getCurrencyIcon()+`" aria-hidden="true"></i></span>						
-							</div>	
-							<div>
-							<span class="badge `+bgcolor+`">`+str_up+`</span>						
-							</div>	
+							</div>							
 						</div>
 					</a>`;
 		}
@@ -884,18 +881,28 @@ $(document).ready(function(){
 	
 	$(".page, #sidebar").swipe({
 		swipeStatus: function(event, phase, direction, distance){
+			//console.log(direction+' '+phase+" "+distance);
 			let el = $(this);
 			let depend_id = el.data("depends");
 			
-			if(direction == "right" && depend_id && !app._isMenuShowed()){
+			if(direction == "right" && depend_id && !app._isMenuShowed()){				
 				el.css({
 					left: distance
 				});
 												
 				$('#'+depend_id).css({
 					left: distance-app._getDisplayWidth()
-				});
-				
+				});			
+			}
+			
+			if(direction == "right" && phase == "cancel"){
+				$(this).animate({left: 0}, app.pageAnimateSpeed);
+				if(depend_id){					
+					$('#'+depend_id).animate({
+						left: -app._getDisplayWidth(),
+					}, app.pageAnimateSpeed);
+					
+				}
 			}
 			
 			if(app.pageShowed != "page-login" && app.pageShowed != "page-registration"){
@@ -946,12 +953,16 @@ $(document).ready(function(){
 					});
 				}
 			}else{
+				
 				$(this).animate({left: 0}, app.pageAnimateSpeed);
+				
 				if(depend_id){					
 					$('#'+depend_id).animate({
 						left: -app._getDisplayWidth(),
 					}, app.pageAnimateSpeed);
+					
 				}
+				
 			}
 			return false;
 

@@ -51,12 +51,12 @@ var app = {
 			app.showCatalogDetail($(this).data("id"), this);
 		});				
 		
-		//app.getServerData(app.buildTemplates);
-		this.setAppParam(function(){							
+		app.getServerData(app.buildTemplates);
+		/*this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
 		}, function(message){
 			
-		});
+		});*/
 		
     },		
 		
@@ -87,6 +87,7 @@ var app = {
 
 	setSessId: function(sessid){
 		this.options.sessid = sessid;
+		
 	},
 	
 	setAppParam: function(success,fail) {

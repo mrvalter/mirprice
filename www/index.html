@@ -36,10 +36,20 @@
                 <div id="page-settings" data-load="settings.html" class="page"></div>
                 <div id="page-feedback" class="page" data-load="feedback.html"></div>
                 <div id="page-registration" class="page" data-load="registration.html"></div>
-                <div id="page-confirm-phone" class="page" data-load="confirm_phone.html"></div>
+                    <div id="page-confirm-phone" class="page" data-load="confirm_phone.html"></div>
+                
                 <div id="page-login" class="page" data-load="login.html"></div>
+                    <div id="page-change-password-phone" class="page" data-load="change_password_phone.html" data-depends="page-login"></div>
+                    <div id="page-change-password" class="page" data-load="change_password.html" data-depends="page-change-password-phone"></div>
+                
         </div>
-		
+	
+        <div id="notice-success-head" class="alert alert-info" role="alert" style="display:none;color:#fff; background-color:#00acac; position: absolute; width: 400px; top: 30px;z-index:3000;margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        right: 0;">
+                      
+        </div>
 		
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/jquery.min.js"></script>
@@ -52,7 +62,7 @@
         <script type="text/javascript" src="js/index.js"></script>
         
         <script>
-           // app.onDeviceReady();
+        
         </script>
     </body>
 </html>

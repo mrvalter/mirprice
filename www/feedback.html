@@ -3,11 +3,46 @@
 	
 	<div class="form-group">
 		<label for="feedback-message"><translate data-translate="feedback.message"></translate></label>
-		<textarea class="form-control" id="feedback-message"></textarea>
+		<textarea rows="10" class="form-control" id="feedback-message"></textarea>
+                <div id="feedback-message-error" class="invalid-feedback"></div>
 	</div>
     
 	<div class="form-group ">
-            <button type="button" class="btn btn-primary btn-lg btn-block login-button"><translate data-translate="feedback.send"></translate></button>
+            <!-- disabled="disabled"  -->
+            <button id="feedback-send" type="submit" class="btn btn-primary btn-lg btn-block login-button"><translate data-translate="feedback.send"></translate></button>            
         </div>
 </form>
 </div>
+
+
+<script>
+    
+    $("#feedback-message").keyup(function(){
+        var message = $("#feedback-message").val().trim();
+        if(message === "" || message.length < 5){
+            $('#feedback-send').prop("disabled", "disabled");
+        }else{
+            $('#feedback-send').prop("disabled", false);
+        }
+    });
+    
+    $("#feedback-form").submit(function(){
+        var message = $("#feedback-message").val().trim();
+        
+        
+        var params = {
+            message: message            
+        };
+        
+        app.sendRequest(params, "feedback", function(response){            
+            $("#feedback-message").val("");
+            app.showPage("page-catalog", false, function(){
+                app.showHeadSuccess(response.message);                
+            });                                
+            
+        });
+        return false;
+    });
+        
+    
+</script>

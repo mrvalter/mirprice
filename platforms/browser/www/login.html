@@ -28,10 +28,19 @@
         <button id="login-button" type="button" class="btn btn-primary btn-lg btn-block login-button"><translate data-translate="login.login_button"></translate></button>
     </div>
 </form>
+    
+    <div style="float:right">
+        <a id="forgot-password-href" href="#"><translate data-translate="login.forgot_password_href"></translate></a>
+    </div>
 </div>
 
 <script>
     
+    
+   $("#forgot-password-href").click(function(){       
+       app.showPage("page-change-password-phone", true);       
+   });
+   
    $('#login-button').click(function(){
         var data = $('#login-form').serializeArray();
         var sendData = {};

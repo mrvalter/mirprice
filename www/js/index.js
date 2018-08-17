@@ -390,13 +390,16 @@ var app = {
 					}else{
 						app.setUser({});
 					}
+					
+					if(respdata.data && respdata.data.points !== undefined){
+						app.last_points = respdata.data.points;
+					}
+					
 					if(typeof callback === "function"){
 						callback(respdata.data);					
 					}
 					
-					if(respdata.data.points !== undefined){
-						app.last_points = respdata.data.points;
-					}
+					
 					
 					app.saveOptionsIntoFile();
 				}else{
@@ -596,8 +599,12 @@ var app = {
 			}else{
 				$('#menu-confirm-fone-button').css({display:"none"});
 			}
+			$("#sidebar-menu .m-feedback").css({display:"block"});
+			
 		}else if(app.is_registered === "1"){
 			$('#menu-registration-button').css({display:"none"});
+		}else{
+			//$("#sidebar-menu .m-feedback").css({display:"none"});
 		}
 	},
 	
@@ -901,6 +908,16 @@ var app = {
 		
 		app.exitNotice();
 		
+	},
+	
+	showHeadSuccess: function(text){
+		$("#notice-success-head").html(text);
+		$("#notice-success-head").show(500);            
+		$("#notice-success-head").animate({                 
+			 top: 0,
+		 }, 1300, function(){
+			$("#notice-success-head").css({display:"none", top:"30px"});                
+		 });                  
 	}
 };
 

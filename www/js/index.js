@@ -51,12 +51,12 @@ var app = {
 			app.showCatalogDetail($(this).data("id"), this);
 		});				
 		
-		app.getServerData(app.buildTemplates);
-		/*this.setAppParam(function(){							
+		/*app.getServerData(app.buildTemplates);*/
+		this.setAppParam(function(){							
 			app.getServerData(app.buildTemplates);
 		}, function(message){
 			
-		});*/
+		});
 		
     },		
 		

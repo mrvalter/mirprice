@@ -771,6 +771,7 @@ var app = {
 		}
 		
 		var lch = $('#lineChart');
+		lch.html("");
 		chart = new Chart(lch, {
 			type: graf,
 			data: chartData,

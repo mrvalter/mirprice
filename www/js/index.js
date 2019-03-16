@@ -14,10 +14,9 @@ var data = {
 	
 };
 
-
-
-		
+	
 var loadInterval;
+var chart = {};
 
 
 var app = {
@@ -51,12 +50,15 @@ var app = {
 			app.showCatalogDetail($(this).data("id"), this);
 		});				
 		
-		/*app.getServerData(app.buildTemplates);*/
-		this.setAppParam(function(){							
+		if(app.test == "1"){
 			app.getServerData(app.buildTemplates);
-		}, function(message){
-			
-		});
+		}else{
+			this.setAppParam(function(){							
+				app.getServerData(app.buildTemplates);
+			}, function(message){
+
+			});
+		}
 		
     },		
 		
@@ -69,7 +71,7 @@ var app = {
 	server_url: "http://mirprice.com/api/api.php",
 	//server_url: "http://77.41.7.198/api/api.php",
 	chart: {},
-	test: 1,
+	test: 0,
 	options_dir: "options",
 	last_points: [],
 	options: {
@@ -84,6 +86,7 @@ var app = {
 	user: {},
 	is_registered: "0",
 	detail_id: null,
+	swipe: null,
 
 	setSessId: function(sessid){
 		this.options.sessid = sessid;
@@ -91,7 +94,10 @@ var app = {
 	},
 	
 	setAppParam: function(success,fail) {
-		console.log(cordova.file.externalDataDirectory);
+		if(app.test == "1"){
+			success();
+			return true;
+		}
         window.resolveLocalFileSystemURL(cordova.file.externalDataDirectory, 
             function(fs) {
                 app.mmfs = fs;
@@ -171,7 +177,11 @@ var app = {
     },
 	
 	saveFile: function (filePath,fileName,filedata, success, fail) 
-    {   
+    {
+		if(app.test == "1"){
+			success();
+			return true;
+		}
         if (filePath.trim()!=="") {
             if (filePath.substr(-1)!=="/") { filePath=filePath+"/"; }
             if (filePath.substr(0,1)=="/") { filePath=filePath.substr(1); }                    
@@ -211,10 +221,8 @@ var app = {
 	},
 	
 	drawCatalogDetail: function(resp_data, el){		
-		var points =  resp_data.points;		
-		//app.chart = app.buildChart(points);
-		
-		app.loadLocal("page-catalog-detail-graf", "catalog_detail_graf.html", app.buildChart.bind(this, points));
+		var points =  resp_data.points;			
+		app.buildChart(points);
 		
 		app.initUserTemplates();				
 		app.buildMessages(resp_data.messages);
@@ -468,11 +476,13 @@ var app = {
 		console.log(loadInterval);
 	},
 	
-	LoadImgHide: function(){
-		clearInterval(loadInterval);
+	LoadImgHide: function(){		
 		$('#load_back').css({display:"none"});
-		$('#img').css({display:"none"});		
-				
+		$('#load_back').hide();
+		
+		$('#img').css({display:"none"});
+		$('#img').hide();
+		clearInterval(loadInterval);				
 		console.log("clear "+loadInterval);
 	},
 		
@@ -499,6 +509,8 @@ var app = {
 	},			
 	
 	showPage: function(id, isanimate, callback){
+		app.LoadImgHide();
+		
 		if(isanimate === undefined){
 			isanimate  = true;
 		}
@@ -647,6 +659,7 @@ var app = {
 		//app.pageShowed = "page-catalog";
 		app.showPage("page-catalog", false);
 		app.loadLocal("sidebar", "sidebar.html", app.initUserTemplates);
+		app.loadLocal("page-catalog-detail-graf", "catalog_detail_graf.html");
 	},
 	
 	buildCatalog: function(){		
@@ -688,6 +701,7 @@ var app = {
 	
 	buildChart: function(points, period_type, graf){
 		
+		console.log("DRAW GRAFIC POINTS");
 		if(period_type === undefined){
 			period_type = $("#chart-settings .chart-period.active").data("period");
 		}
@@ -768,6 +782,9 @@ var app = {
 			chartOptions.scales.xAxes[0].time.unit = "day";
 		}else{
 			chartOptions.scales.xAxes[0].time.unit = "month";
+		}
+		if(typeof chart.destroy == "function"){
+			chart.destroy();
 		}
 		
 		var lch = $('#lineChart');
@@ -992,8 +1009,11 @@ $(document).ready(function(){
 			let el = $(this);
 			let depend_id = el.data("depends");
 			let swipeleft = el.data("swipeleft");
+			if(app.swipe === null){
+				app.swipe = direction;
+			}									
 			
-			if(direction == "right" && depend_id && !app._isMenuShowed()){				
+			if(direction == "right" && app.swipe ==direction && depend_id && !app._isMenuShowed()){				
 				el.css({
 					left: distance
 				});
@@ -1003,23 +1023,23 @@ $(document).ready(function(){
 				});			
 			}
 			
-			if(direction == "right" && phase == "cancel"){
+			if(direction == "right"  && app.swipe ==direction && phase == "cancel"){
 				$(this).animate({left: 0}, app.pageAnimateSpeed);
 				if(depend_id){					
 					$('#'+depend_id).animate({
 						left: -app._getDisplayWidth(),
 					}, app.pageAnimateSpeed);
 					
-				}
+				}				
 			}
 			
-			if(direction == "left" && swipeleft && !app._isMenuShowed()){
+			if(direction == "left"  && app.swipe ==direction && swipeleft && !app._isMenuShowed()){
 				
 				if(phase == "cancel"){
 					$(this).animate({left: 0}, app.pageAnimateSpeed);
 					$('#'+swipeleft).css({
 						left: app._getDisplayWidth()
-					});
+					});					 
 					return true;
 				}
 				
@@ -1035,14 +1055,19 @@ $(document).ready(function(){
 			
 			
 			if(app.pageShowed != "page-login" && app.pageShowed != "page-registration"){
-				if(direction == "down"){
+				if(direction == "down"  && app.swipe == direction){
 					if(phase == "cancel"){
 						$("#update-div").css({top: 0});
+						 app.swipe = null;
 					}
 					else if($(this).scrollTop() <= 0 && distance < 60){
 						$("#update-div").css({top: distance});
 					}			
 				}
+			}
+			
+			if(phase == "cancel"){
+				app.swipe = null;
 			}
 		},
 				
@@ -1057,7 +1082,7 @@ $(document).ready(function(){
 			}
 			
 			
-			if(distance > app._getDisplayWidth()/3){
+			if(distance > app._getDisplayWidth()/4){
 				$(this).animate({
 					left: app._getDisplayWidth(),
 				}, app.pageAnimateSpeed);
@@ -1077,6 +1102,7 @@ $(document).ready(function(){
 				}, app.pageAnimateSpeed);
 			}
 			
+			app.swipe = null;
 		},
 		
 		swipeRight: function (event, direction, distance, duration, fingerCount) {
@@ -1092,7 +1118,7 @@ $(document).ready(function(){
 				return false;
 			}
 			
-			if(distance > app._getDisplayWidth()/3){
+			if(distance > app._getDisplayWidth()/4){
 				$(this).animate({
 					left: app._getDisplayWidth(),
 				}, app.pageAnimateSpeed, function(){
@@ -1119,6 +1145,7 @@ $(document).ready(function(){
 				}
 				
 			}
+			app.swipe = null;
 			return false;
 
 		},
@@ -1131,8 +1158,9 @@ $(document).ready(function(){
 					app.rebuild(app.pageShowed);					
 				}
 			}
+			app.swipe = null;
 		},
-		
+				
 		//allowPageScroll:"vertical"
 		allowPageScroll:"vertical"
 	});
